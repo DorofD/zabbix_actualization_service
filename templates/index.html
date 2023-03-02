@@ -1,0 +1,96 @@
+{% extends 'base.html' %} {% block content %} {{ super() }}
+
+<table class="users">
+  <tr>
+    <th>Оператор</th>
+    <th>Дата</th>
+    <th>Действие</th>
+  </tr>
+  <tr>
+    <td>Все операторы</td>
+    <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="text" name="date" placeholder="дд:мм:гг" /></td>
+      <td>
+        <input type="hidden" name="operator" value="0" />
+        <input type="submit" value="Скачать отчёт" />
+      </td>
+    </form>
+  </tr>
+  <!-- <tr>
+      <td>Оператор 1</td>
+      <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+      >
+      <td><input type="text" name="date" placeholder="дд:мм:гггг"></td>
+      <td>
+      <input type="hidden" name="operator" value="1">
+      <input type="submit" value="Скачать отчёт">
+    </td>
+  </form>
+      </tr>
+    <tr>
+      <td>Оператор 2</td>
+      <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+      >
+      <td><input type="text" name="date" placeholder="дд:мм:гг"></td>
+      <td>
+      <input type="hidden" name="operator" value="2">
+      <input type="submit" value="Скачать отчёт">
+    </td>
+      </form>
+      </tr>
+    <tr>
+      <td>Оператор 3</td>
+      <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+      >
+      <td><input type="text" name="date" placeholder="дд:мм:гг"></td>
+      <td>
+      <input type="hidden" name="operator" value="3">
+      <input type="submit" value="Скачать отчёт">
+      </form>
+      </td>
+      </tr>
+    <tr>
+      <td>Оператор 4</td>
+      <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+      >
+      <td><input type="text" name="date" placeholder="дд:мм:гг"></td>
+      <td>
+      <input type="hidden" name="operator" value="4">
+      <input type="submit" value="Скачать отчёт">
+      </form>
+      </td>
+      </tr>
+    <tr>
+      <td>Оператор 5</td>
+      <form
+      action="{{url_for('report')}}"
+      method="POST"
+      enctype="multipart/form-data"
+      >
+      <td><input type="text" name="date" placeholder="дд:мм:гг"></td>
+      <td>
+      <input type="hidden" name="operator" value="5">
+      <input type="submit" value="Скачать отчёт">
+      </form>
+      </td>
+      </tr>
+  </form> -->
+</table>
+
+{% endblock %}

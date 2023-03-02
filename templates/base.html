@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link
+      type="text/css"
+      href="{{ url_for('static', filename='css/styles.css')}}"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='images/icon.png')}}"
+    />
+    <meta charset="UTF-8" />
+
+    <title>count_report</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <ul class="mainmenu">
+          <li>
+            <a class="{{class1}}" href="{{ url_for('index')}}">Отчёты</a>
+          </li>
+          <li>
+            <a class="{{class2}}" href="{{ url_for('clever_cam')}}"
+              >CleverCam</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <div class="content">
+      {% for cat, msg in get_flashed_messages(True) %}
+      <div class="flash {{cat}}">{{ msg }}</div>
+      {% endfor %}{% block content -%} {% endblock %}
+    </div>
+  </body>
+</html>

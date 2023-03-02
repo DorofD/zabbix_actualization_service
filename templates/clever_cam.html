@@ -1,0 +1,86 @@
+{% extends 'base.html' %} {% block content %} {{ super() }}
+
+<table class="users">
+  <form
+    action="{{url_for('clever_cam')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <tr>
+      <th>Параметр</th>
+      <th>Значение</th>
+    </tr>
+    <tr>
+      <td>PID</td>
+      <td>
+        <input type="text" name="pid" />
+      </td>
+    </tr>
+    <tr>
+      <td>Камера</td>
+      <td>
+        <select name="cam">
+          <option value="cam1">cam1</option>
+          <option value="cam2">cam2</option>
+          <option value="cam3">cam3</option>
+          <option value="cam4">cam4</option>
+          <option value="cam5">cam5</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Дата</td>
+      <td>
+        <input type="text" name="date" placeholder="ддммгг" />
+      </td>
+    </tr>
+    <tr>
+      <td>Время начало</td>
+      <td>
+        <input type="text" name="start_time" placeholder="чч:мм:сс" />
+      </td>
+    </tr>
+    <tr>
+      <td>Время конец</td>
+      <td>
+        <input type="text" name="end_time" placeholder="чч:мм:сс" />
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" />
+      </td>
+    </tr>
+  </form>
+  <tr>
+    <th>Запрошенный параметр</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td>PID</td>
+    <td>{{entered_data[0]}}</td>
+  </tr>
+  <tr>
+    <td>Камера</td>
+    <td>{{entered_data[1]}}</td>
+  </tr>
+  <tr>
+    <td>Дата</td>
+    <td>{{entered_data[2]}}</td>
+  </tr>
+  <tr>
+    <td>Время начало</td>
+    <td>{{entered_data[3]}}</td>
+  </tr>
+  <tr>
+    <td>Время конец</td>
+    <td>{{entered_data[4]}}</td>
+  </tr>
+  <tr>
+    <td><b>Результат</b></td>
+    <td>Вошло:<b>{{result[0]}} </b>Вышло:<b>{{result[1]}}</b></td>
+  </tr>
+</table>
+
+{% endblock %}
