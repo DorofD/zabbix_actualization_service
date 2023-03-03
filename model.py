@@ -21,7 +21,7 @@ ZABBIX_USER = os.environ['ZABBIX_USER']
 ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
 
 
-def get_hosts(host_type):
+def get_hosts_from_db(host_type):
     conn = pyodbc.connect(
         f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
 
@@ -38,7 +38,7 @@ def get_hosts(host_type):
 
 host = 'Гл. касса'
 
-a = get_hosts(host)
+a = get_hosts_from_db(host)
 
 for i in a:
     print(i)

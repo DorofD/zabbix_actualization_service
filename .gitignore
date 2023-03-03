@@ -1,6 +1,5 @@
 /venv
 .env
 /old_scripts
-test.py
 log
 log.txt
