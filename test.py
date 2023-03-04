@@ -29,8 +29,10 @@ login = {
 
 try:
     responce = requests.post(
-        rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})
+        # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+        rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})
     decode_responce = responce.content.decode('utf-8')
+    print(decode_responce)
     dict_responce = ast.literal_eval(decode_responce)
     auth = dict_responce['result']
     print(auth)
@@ -54,7 +56,8 @@ try:
     }
 
     responce = requests.post(
-        rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})
+        # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+        rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})
     decode_responce = responce.content.decode('utf-8')
     dict_responce = ast.literal_eval(decode_responce)
 
