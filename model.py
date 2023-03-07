@@ -23,18 +23,22 @@ ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
 
 
 def get_hosts_from_ws_db(host_type):
-    conn = pyodbc.connect(
-        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
+    try:
+        conn = pyodbc.connect(
+            f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
 
-    cursor = conn.cursor()
+        cursor = conn.cursor()
 
-    query = f""" SELECT Expr1, Expr2, IP_ADRESS, TYPE
-            FROM dbo.CamInShops_r
-            WHERE TYPE = '{host_type}' """
+        query = f""" SELECT Expr1, Expr2, IP_ADRESS, TYPE
+                FROM dbo.CamInShops_r
+                WHERE TYPE = '{host_type}' """
 
-    cursor.execute(query)
-    result = list(cursor.fetchall())
-    return result
+        cursor.execute(query)
+        result = list(cursor.fetchall())
+        return result
+    except Exception as exc:
+        print(exc)
+        return False
 
 
 def get_zabbix_auth_key():
