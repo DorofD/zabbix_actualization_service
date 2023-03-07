@@ -68,10 +68,11 @@ host = {"zabbix_export":
         {"version": "5.0",
          "groups": [{"name": "Discovered hosts"}],
          "hosts": [
-             {"host": "172.16.49.216",
-              "name": "172.16.49.216",
+             {"host": "172.16.49.1",
+              "name": "172.16.49.1",
+              "tags": [{'tag': 'aboba228', 'value': ''}],
               "groups": [{"name": "Discovered hosts"}],
-              "interfaces": [{"ip": "172.16.49.216", "interface_ref": "if1"}],
+              "interfaces": [{"ip": "172.16.49.1", "interface_ref": "if1"}],
               "inventory_mode": "DISABLED"}]}}
 json_host = json.dumps(host)
 
@@ -118,35 +119,57 @@ request = {
 #     "auth": key,
 #     "id": 1
 # }
+# request = {
+#     "jsonrpc": "2.0",
+#     "method": "host.get",
+#     "params": {
+#         "output": [
+#             "hostid",
+#             "host",
+#             "name",
+#         ],
+#         "selectInterfaces": [
+#             "interfaceid",
+#             "ip"
+#         ]
+#     },
+#     "id": 2,
+#     "auth": key
+# }
 request = {
     "jsonrpc": "2.0",
     "method": "host.get",
     "params": {
+
+        "tags": [{
+            "tag": "aboba228",
+        }],
+        "groupids": 18,
+        "selectTags": ["tag", "value"],
+        "selectGroups": "extend",
         "output": [
             "hostid",
             "host",
             "name",
-            "groups"
         ],
-        "selectInterfaces": [
-            "interfaceid",
-            "ip"
-        ]
-    },
-    "id": 2,
-    "auth": key
-}
-
-request = {
-    "jsonrpc": "2.0",
-    "method": "hostgroup.get",
-    "params": {
-        "output": "extend",
-
     },
     "auth": key,
     "id": 1
 }
+
+print(request)
+del request["params"]["tags"]
+print(request)
+# request = {
+#     "jsonrpc": "2.0",
+#     "method": "hostgroup.get",
+#     "params": {
+#         "output": "extend",
+
+#     },
+#     "auth": key,
+#     "id": 1
+# }
 responce = requests.post(
     # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
     rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
@@ -156,5 +179,12 @@ decode_responce = decode_responce.replace('true', 'True')
 dict_responce = ast.literal_eval(decode_responce)
 # print(dict_responce)
 
-for i in dict_responce['result']:
-    print(i)
+if type(dict_responce['result']) == bool:
+    print('Result:', dict_responce['result'])
+else:
+    for i in dict_responce['result']:
+        print(i)
+
+a = 0
+if not a:
+    print(1212313)

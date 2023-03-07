@@ -38,7 +38,6 @@ def get_hosts_from_ws_db(host_type):
 
 
 def get_zabbix_auth_key():
-
     try:
         login = {
             "jsonrpc": "2.0",
@@ -63,11 +62,55 @@ def get_zabbix_auth_key():
         return False
 
 
+def get_hosts_from_zabbix_server(key, groupid, tag):
+    try:
+        request = {
+            "jsonrpc": "2.0",
+            "method": "host.get",
+            "params": {
+                "tags": [{
+                    "tag": tag,
+                }],
+                "groupids": groupid,
+                "selectTags": ["tag", "value"],
+                "selectGroups": "extend",
+                "output": [
+                    "hostid",
+                    "host",
+                    "name",
+                ],
+            },
+            "auth": key,
+            "id": 1
+        }
+        if not groupid:
+            del request["params"]["groupids"]
+        if not tag:
+            del request["params"]["tags"]
+
+        responce = requests.post(
+            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+        decode_responce = responce.content.decode('utf-8')
+        decode_responce = decode_responce.replace('true', 'True')
+        dict_responce = ast.literal_eval(decode_responce)
+        result = dict_responce['result']
+        return result
+    except Exception as exc:
+        print(exc)
+        return False
+
+
 host = 'Гл. касса'
 
-a = get_hosts_from_ws_db(host)
+# a = get_hosts_from_ws_db(host)
 
-for i in a:
+# for i in a:
+#     print(i)
+key = get_zabbix_auth_key()
+
+hosts = get_hosts_from_zabbix_server(key, 0, 'podro4ilda')
+for i in hosts:
     print(i)
 
 logging.info('info')
