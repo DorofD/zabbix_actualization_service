@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import pyodbc
 import requests
 import ast
+import sqlite3 as sq
 
 logging.basicConfig(level=logging.INFO,
                     filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
@@ -42,6 +43,21 @@ def get_hosts_from_ws_db(host_type):
         return False
 
 
+def send_request_to_zabbix(request):
+    try:
+        responce = requests.post(
+            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
+            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+        decode_responce = responce.content.decode('utf-8')
+        decode_responce = decode_responce.replace('true', 'True')
+        decode_responce = decode_responce.replace('false', 'False')
+        dict_responce = ast.literal_eval(decode_responce)
+        return dict_responce
+    except Exception as exc:
+        print(exc)
+        return False
+
+
 def get_zabbix_auth_key():
     try:
         login = {
@@ -54,12 +70,8 @@ def get_zabbix_auth_key():
             "id": 1
         }
 
-        responce = requests.post(
-            rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
-        # rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
-        decode_responce = responce.content.decode('utf-8')
-        dict_responce = ast.literal_eval(decode_responce)
-        key = dict_responce['result']
+        responce = send_request_to_zabbix(login)
+        key = responce['result']
         return key
 
     except Exception as exc:
@@ -93,13 +105,8 @@ def get_hosts_from_zabbix(key, groupid, tag):
         if not tag:
             del request["params"]["tags"]
 
-        responce = requests.post(
-            rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
-        # rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
-        decode_responce = responce.content.decode('utf-8')
-        decode_responce = decode_responce.replace('true', 'True')
-        dict_responce = ast.literal_eval(decode_responce)
-        result = dict_responce['result']
+        responce = send_request_to_zabbix(request)
+        result = responce['result']
         return result
     except Exception as exc:
         print(exc)
@@ -118,13 +125,8 @@ def get_groups_from_zabbix(key):
             "id": 1
         }
 
-        responce = requests.post(
-            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
-            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
-        decode_responce = responce.content.decode('utf-8')
-        decode_responce = decode_responce.replace('true', 'True')
-        dict_responce = ast.literal_eval(decode_responce)
-        result = dict_responce['result']
+        responce = send_request_to_zabbix(request)
+        result = responce['result']
         return result
     except Exception as exc:
         print(exc)
@@ -168,23 +170,17 @@ def import_hosts_to_zabbix(key, host_list):
             "auth": key,
             "id": 1
         }
-        responce = requests.post(
-            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
-            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
-        decode_responce = responce.content.decode('utf-8')
-        decode_responce = decode_responce.replace('true', 'True')
-        dict_responce = ast.literal_eval(decode_responce)
 
+        responce = send_request_to_zabbix(request)
         result = {'status': '', 'message': ''}
-        if 'result' in dict_responce:
+        if 'result' in responce:
             result['status'] = True
-        elif 'error' in dict_responce:
+        elif 'error' in responce:
             result['status'] = False
-            result['message'] = dict_responce['error']
+            result['message'] = responce['error']
         else:
             result['status'] = False
             result['message'] = 'Unexpected error'
-
         return result
 
     except Exception as exc:
@@ -193,12 +189,27 @@ def import_hosts_to_zabbix(key, host_list):
         return result
 
 
+def execute_db_query(query):
+    try:
+        conn = sq.connect('database.db')
+        cursor = conn.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        conn.commit()
+        conn.close()
+        return result
+    except Exception as exc:
+        print(exc)
+        conn.close()
+        return False
+
+
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
 # for i in a:
 #     print(i)
-
 key = get_zabbix_auth_key()
+# print(key)
 
 # hosts = get_hosts_from_zabbix(key, groupid=0, tag='')
 # for i in hosts:
@@ -209,13 +220,13 @@ key = get_zabbix_auth_key()
 #     print(i)
 
 
-hosts = [
-    {'host': '172.16.49.1', 'name': '172.16.49.1', 'tags': [{'tag': 'aboba2228', 'value': ''}], 'groups': [
-        {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
-    {'host': '172.16.49.2', 'name': '172.16.49.2', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [{'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip':
-                                                                                                                                                                                                                '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
-]
-import_hosts_to_zabbix(key, host_list=hosts)
+# hosts = [
+#     {'host': '172.16.49.1', 'name': '172.16.49.1', 'tags': [{'tag': 'aboba2228', 'value': ''}], 'groups': [
+#         {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
+#     {'host': '172.16.49.2', 'name': '172.16.49.2', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [{'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip':
+#                                                                                                                                                                                                                 '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
+# ]
+# print(import_hosts_to_zabbix(key, host_list=hosts))
 
 logging.info('info')
 logging.error('error')
