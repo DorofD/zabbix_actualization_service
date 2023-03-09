@@ -3,6 +3,10 @@ import ast
 import json
 import os
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
@@ -32,7 +36,7 @@ def get_zabbix_auth_key():
         }
 
         responce = requests.post(
-            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
             rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
         decode_responce = responce.content.decode('utf-8')
         dict_responce = ast.literal_eval(decode_responce)
@@ -46,132 +50,25 @@ def get_zabbix_auth_key():
 
 key = get_zabbix_auth_key()
 
-# request = {
-#     "jsonrpc": "2.0",
-#     "method": "host.get",
-#     "params": {
-#         "output": [
-#             "hostid",
-#             "host",
-#             "name"
-#         ],
-#         "selectInterfaces": [
-#             "interfaceid",
-#             "ip"
-#         ]
-#     },
-#     "id": 2,
-#     "auth": key
-# }
-
-host = {"zabbix_export":
-        {"version": "5.0",
-         "groups": [{"name": "Discovered hosts"}],
-         "hosts": [
-             {"host": "172.16.49.1",
-              "name": "172.16.49.1",
-              "tags": [{'tag': 'aboba228', 'value': ''}],
-              "groups": [{"name": "Discovered hosts"}],
-              "interfaces": [{"ip": "172.16.49.1", "interface_ref": "if1"}],
-              "inventory_mode": "DISABLED"}]}}
-json_host = json.dumps(host)
-
-# host = '{"zabbix_export":{"version":"5.0","date":"2023-03-07T11:32:46Z","groups":[{"name":"Discovered hosts"}],"hosts":[{"host":"172.16.49.37","name":"172.16.49.37","groups":[{"name":"Discovered hosts"}],"interfaces":[{"ip":"172.16.49.37","interface_ref":"if1"}],"inventory_mode":"DISABLED"}]}}'
 
 request = {
     "jsonrpc": "2.0",
-    "method": "configuration.import",
+    "method": "configuration.export",
     "params": {
-        "format": "json",
-        "rules": {"applications": {
-            "createMissing": True,
+        "options": {
+            "hosts": [
+                "10525"
+            ]
         },
-            "discoveryRules": {"createMissing": True, "updateExisting": True},
-            "graphs": {"createMissing": True, "updateExisting": True},
-            "groups": {"createMissing": True},
-            "hosts": {"createMissing": True, "updateExisting": True},
-            "images": {"createMissing": True, "updateExisting": True},
-            "items": {"createMissing": True, "updateExisting": True},
-            "maps": {"createMissing": True, "updateExisting": True},
-            "screens": {"createMissing": True, "updateExisting": True},
-            "templateLinkage": {"createMissing": True},
-            "templates": {"createMissing": True, "updateExisting": True},
-            "triggers": {"createMissing": True, "updateExisting": True},
-            "valueMaps": {"createMissing": True, "updateExisting": True},
-        },
-        "source": json_host
+        "format": "json"
     },
     "auth": key,
     "id": 1
 }
 
-# request = {
-#     "jsonrpc": "2.0",
-#     "method": "configuration.export",
-#     "params": {
-#         "options": {
-#             "hosts": [
-#                 "10525"
-#             ]
-#         },
-#         "format": "json"
-#     },
-#     "auth": key,
-#     "id": 1
-# }
-# request = {
-#     "jsonrpc": "2.0",
-#     "method": "host.get",
-#     "params": {
-#         "output": [
-#             "hostid",
-#             "host",
-#             "name",
-#         ],
-#         "selectInterfaces": [
-#             "interfaceid",
-#             "ip"
-#         ]
-#     },
-#     "id": 2,
-#     "auth": key
-# }
-request = {
-    "jsonrpc": "2.0",
-    "method": "host.get",
-    "params": {
 
-        "tags": [{
-            "tag": "aboba228",
-        }],
-        "groupids": 18,
-        "selectTags": ["tag", "value"],
-        "selectGroups": "extend",
-        "output": [
-            "hostid",
-            "host",
-            "name",
-        ],
-    },
-    "auth": key,
-    "id": 1
-}
-
-print(request)
-del request["params"]["tags"]
-print(request)
-# request = {
-#     "jsonrpc": "2.0",
-#     "method": "hostgroup.get",
-#     "params": {
-#         "output": "extend",
-
-#     },
-#     "auth": key,
-#     "id": 1
-# }
 responce = requests.post(
-    # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+    # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
     rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
 decode_responce = responce.content.decode('utf-8')
 decode_responce = decode_responce.replace('true', 'True')
@@ -179,12 +76,18 @@ decode_responce = decode_responce.replace('true', 'True')
 dict_responce = ast.literal_eval(decode_responce)
 # print(dict_responce)
 
-if type(dict_responce['result']) == bool:
+if 'error' in dict_responce:
+    print('Error:', dict_responce['error'])
+elif type(dict_responce['result']) == bool:
     print('Result:', dict_responce['result'])
 else:
     for i in dict_responce['result']:
+        logging.info(i)
         print(i)
 
-a = 0
-if not a:
-    print(1212313)
+hosts = [
+    {'host': '172.16.49.1', 'name': '172.16.49.1', 'tags': [{'tag': 'aboba2228', 'value': ''}], 'groups': [
+        {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
+    {'host': '172.16.49.2', 'name': '172.16.49.2', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [{'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip':
+                                                                                                                                                                                                                '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
+]

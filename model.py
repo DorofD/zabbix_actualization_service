@@ -1,12 +1,13 @@
 import os
 import logging
+import json
 from dotenv import load_dotenv
 import pyodbc
 import requests
 import ast
 
 logging.basicConfig(level=logging.INFO,
-                    filename="log.txt", filemode="a", format=f'%(asctime)s %(levelname)s: %(message)s')
+                    filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
@@ -54,8 +55,8 @@ def get_zabbix_auth_key():
         }
 
         responce = requests.post(
-            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
-            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+            rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
+        # rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=login, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
         decode_responce = responce.content.decode('utf-8')
         dict_responce = ast.literal_eval(decode_responce)
         key = dict_responce['result']
@@ -66,7 +67,7 @@ def get_zabbix_auth_key():
         return False
 
 
-def get_hosts_from_zabbix_server(key, groupid, tag):
+def get_hosts_from_zabbix(key, groupid, tag):
     try:
         request = {
             "jsonrpc": "2.0",
@@ -93,7 +94,32 @@ def get_hosts_from_zabbix_server(key, groupid, tag):
             del request["params"]["tags"]
 
         responce = requests.post(
-            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'}) # для Zabbix 5.2
+            rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
+        # rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+        decode_responce = responce.content.decode('utf-8')
+        decode_responce = decode_responce.replace('true', 'True')
+        dict_responce = ast.literal_eval(decode_responce)
+        result = dict_responce['result']
+        return result
+    except Exception as exc:
+        print(exc)
+        return False
+
+
+def get_groups_from_zabbix(key):
+    try:
+        request = {
+            "jsonrpc": "2.0",
+            "method": "hostgroup.get",
+            "params": {
+                "output": "extend"
+            },
+            "auth": key,
+            "id": 1
+        }
+
+        responce = requests.post(
+            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
             rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
         decode_responce = responce.content.decode('utf-8')
         decode_responce = decode_responce.replace('true', 'True')
@@ -105,17 +131,91 @@ def get_hosts_from_zabbix_server(key, groupid, tag):
         return False
 
 
-host = 'Гл. касса'
+def import_hosts_to_zabbix(key, host_list):
+    try:
 
+        hosts = {"zabbix_export":
+                 # {"version": "5.2",
+                 {
+                     "version": "5.0",
+                     "hosts": host_list}}
+
+        json_hosts = json.dumps(hosts)
+
+        request = {
+            "jsonrpc": "2.0",
+            "method": "configuration.import",
+            "params": {
+                "format": "json",
+                "rules": {"applications": {
+                    "createMissing": True,
+                },
+                    "discoveryRules": {"createMissing": True, "updateExisting": True},
+                    "graphs": {"createMissing": True, "updateExisting": True},
+                    "groups": {"createMissing": True},
+                    "hosts": {"createMissing": True, "updateExisting": True},
+                    "images": {"createMissing": True, "updateExisting": True},
+                    "items": {"createMissing": True, "updateExisting": True},
+                    "maps": {"createMissing": True, "updateExisting": True},
+                    "screens": {"createMissing": True, "updateExisting": True},
+                    "templateLinkage": {"createMissing": True},
+                    "templates": {"createMissing": True, "updateExisting": True},
+                    "triggers": {"createMissing": True, "updateExisting": True},
+                    "valueMaps": {"createMissing": True, "updateExisting": True},
+                },
+                "source": json_hosts
+            },
+            "auth": key,
+            "id": 1
+        }
+        responce = requests.post(
+            # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
+            rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+        decode_responce = responce.content.decode('utf-8')
+        decode_responce = decode_responce.replace('true', 'True')
+        dict_responce = ast.literal_eval(decode_responce)
+
+        result = {'status': '', 'message': ''}
+        if 'result' in dict_responce:
+            result['status'] = True
+        elif 'error' in dict_responce:
+            result['status'] = False
+            result['message'] = dict_responce['error']
+        else:
+            result['status'] = False
+            result['message'] = 'Unexpected error'
+
+        return result
+
+    except Exception as exc:
+        result['status'] = False
+        result['message'] = exc
+        return result
+
+
+# host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
-
 # for i in a:
 #     print(i)
+
 key = get_zabbix_auth_key()
 
-hosts = get_hosts_from_zabbix_server(key, 0, 'podro4ilda')
-for i in hosts:
-    print(i)
+# hosts = get_hosts_from_zabbix(key, groupid=0, tag='')
+# for i in hosts:
+#     logging.info(i)
+
+# groups = get_groups_from_zabbix(key)
+# for i in groups:
+#     print(i)
+
+
+hosts = [
+    {'host': '172.16.49.1', 'name': '172.16.49.1', 'tags': [{'tag': 'aboba2228', 'value': ''}], 'groups': [
+        {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
+    {'host': '172.16.49.2', 'name': '172.16.49.2', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [{'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip':
+                                                                                                                                                                                                                '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
+]
+import_hosts_to_zabbix(key, host_list=hosts)
 
 logging.info('info')
 logging.error('error')
