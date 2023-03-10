@@ -204,15 +204,100 @@ def execute_db_query(query):
         return False
 
 
-query = f"""
-        SELECT * FROM aboba 
-        INNER JOIN sas 
-        ON aboba.sas_id = sas.id
-        """
+def create_tables():
 
-a = execute_db_query(query)
-for i in a:
-    print(i)
+    query = """
+        CREATE TABLE IF NOT EXISTS "tags" (
+        "id"	INTEGER,
+        "tag"	TEXT UNIQUE,
+        "value"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "groups" (
+        "id"	INTEGER,
+        "group"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "types" (
+        "id"	INTEGER,
+        "type"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "work_times" (
+        "id"	INTEGER,
+        "work_time"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "off_times" (
+        "id"	INTEGER,
+        "off_time"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "shops" (
+        "id"	INTEGER,
+        "pid"	INTEGER UNIQUE,
+        "shop"	TEXT UNIQUE,
+        "work_time"	INTEGER,
+        "off_time"	INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("work_time") REFERENCES "work_times"("id"),
+        FOREIGN KEY("off_time") REFERENCES "off_times"("id")
+        );
+    """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "hosts" (
+        "id"	INTEGER,
+        "ip"	TEXT UNIQUE,
+        "shop"	INTEGER,
+        "group"	INTEGER,
+        "type"	INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("shop") REFERENCES "shops"("id"),
+        FOREIGN KEY("group") REFERENCES "groups"("id"),
+        FOREIGN KEY("type") REFERENCES "types"("id")
+        );
+    """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "host_tag" (
+        "host"	INTEGER,
+        "tag"	INTEGER,
+        FOREIGN KEY("host") REFERENCES "hosts"("id"),
+        FOREIGN KEY("tag") REFERENCES "tags"("id")
+        );
+    """
+    execute_db_query(query)
+
+
+# query = f"""
+#         SELECT * FROM aboba
+#         INNER JOIN sas
+#         ON aboba.sas_id = sas.id
+#         """
+# create_tables()
 
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
