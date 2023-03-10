@@ -204,6 +204,16 @@ def execute_db_query(query):
         return False
 
 
+query = f"""
+        SELECT * FROM aboba 
+        INNER JOIN sas 
+        ON aboba.sas_id = sas.id
+        """
+
+a = execute_db_query(query)
+for i in a:
+    print(i)
+
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
 # for i in a:
