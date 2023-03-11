@@ -204,7 +204,7 @@ def execute_db_query(query):
         return False
 
 
-def create_tables():
+def create_db():
 
     query = """
         CREATE TABLE IF NOT EXISTS "tags" (
@@ -257,11 +257,11 @@ def create_tables():
         "id"	INTEGER,
         "pid"	INTEGER UNIQUE,
         "shop"	TEXT UNIQUE,
-        "work_time"	INTEGER,
-        "off_time"	INTEGER,
+        "work_time_id"	INTEGER,
+        "off_time_id"	INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("work_time") REFERENCES "work_times"("id"),
-        FOREIGN KEY("off_time") REFERENCES "off_times"("id")
+        FOREIGN KEY("work_time_id") REFERENCES "work_times"("id"),
+        FOREIGN KEY("off_time_id") REFERENCES "off_times"("id")
         );
     """
     execute_db_query(query)
@@ -270,26 +270,36 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS "hosts" (
         "id"	INTEGER,
         "ip"	TEXT UNIQUE,
-        "shop"	INTEGER,
-        "group"	INTEGER,
-        "type"	INTEGER,
+        "shop_id"	INTEGER,
+        "group_id"	INTEGER,
+        "type_id"	INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("shop") REFERENCES "shops"("id"),
-        FOREIGN KEY("group") REFERENCES "groups"("id"),
-        FOREIGN KEY("type") REFERENCES "types"("id")
+        FOREIGN KEY("shop_id") REFERENCES "shops"("id"),
+        FOREIGN KEY("group_id") REFERENCES "groups"("id"),
+        FOREIGN KEY("type_id") REFERENCES "types"("id")
         );
     """
     execute_db_query(query)
 
     query = """
         CREATE TABLE IF NOT EXISTS "host_tag" (
-        "host"	INTEGER,
-        "tag"	INTEGER,
-        FOREIGN KEY("host") REFERENCES "hosts"("id"),
-        FOREIGN KEY("tag") REFERENCES "tags"("id")
+        "host_id"	INTEGER,
+        "tag_id"	INTEGER,
+        FOREIGN KEY("host_id") REFERENCES "hosts"("id"),
+        FOREIGN KEY("tag_id") REFERENCES "tags"("id")
         );
     """
     execute_db_query(query)
+
+
+create_db()
+query = """
+    SELECT hosts.ip, shops.pid, shops.shop FROM hosts
+    INNER JOIN shops ON hosts.shop_id = shops.id
+"""
+a = execute_db_query(query)
+for i in a:
+    print(i)
 
 
 # query = f"""
