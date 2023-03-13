@@ -6,6 +6,7 @@ import pyodbc
 import requests
 import ast
 import sqlite3 as sq
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO,
                     filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
@@ -189,15 +190,20 @@ def import_hosts_to_zabbix(key, host_list):
         return result
 
 
-def execute_db_query(query):
+def execute_db_query(query, value_array=0):
     try:
         conn = sq.connect('database.db')
         cursor = conn.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
+        if not value_array:
+            cursor.execute(query)
+            result = cursor.fetchall()
+        else:
+            cursor.executemany(query, value_array)
+            result = True
         conn.commit()
         conn.close()
         return result
+
     except Exception as exc:
         print(exc)
         conn.close()
@@ -235,33 +241,13 @@ def create_db():
     execute_db_query(query)
 
     query = """
-        CREATE TABLE IF NOT EXISTS "work_times" (
-        "id"	INTEGER,
-        "work_time"	TEXT UNIQUE,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
-        """
-    execute_db_query(query)
-
-    query = """
-        CREATE TABLE IF NOT EXISTS "off_times" (
-        "id"	INTEGER,
-        "off_time"	TEXT UNIQUE,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
-        """
-    execute_db_query(query)
-
-    query = """
         CREATE TABLE IF NOT EXISTS "shops" (
         "id"	INTEGER,
         "pid"	INTEGER UNIQUE,
         "shop"	TEXT UNIQUE,
-        "work_time_id"	INTEGER,
-        "off_time_id"	INTEGER,
-        PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("work_time_id") REFERENCES "work_times"("id"),
-        FOREIGN KEY("off_time_id") REFERENCES "off_times"("id")
+        "work_time"	TEXT,
+        "off_time"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
         );
     """
     execute_db_query(query)
@@ -292,14 +278,55 @@ def create_db():
     execute_db_query(query)
 
 
-create_db()
-query = """
-    SELECT hosts.ip, shops.pid, shops.shop FROM hosts
-    INNER JOIN shops ON hosts.shop_id = shops.id
-"""
-a = execute_db_query(query)
-for i in a:
-    print(i)
+def import_independed_values(file):
+    try:
+        sheet = pd.read_excel(file)
+        db_fields = {
+            'groups': 'group',
+            'types': 'type',
+            'tags': ['tag', 'value'],
+        }
+        for import_value in db_fields:
+            print(import_value)
+            db_import_list = []
+            if import_value != 'tags':
+                for i in sheet[import_value]:
+                    db_import_list.append(tuple([i]))
+                query = f"""
+                        INSERT INTO {import_value} ('{db_fields[import_value]}') VALUES(?);
+                    """
+            else:
+                for i in sheet.index:
+                    if type(sheet['tags'][i]) == str:
+                        if type(sheet['tag_value'][i]) == str:
+                            db_import_list.append(
+                                tuple([sheet['tags'][i], sheet['tag_value'][i]]))
+                        else:
+                            db_import_list.append(
+                                tuple([sheet['tags'][i], '']))
+                    else:
+                        break
+                query = f"""
+                        INSERT INTO {import_value} ('{db_fields[import_value][0]}','{db_fields[import_value][1]}') VALUES(?, ?);
+                    """
+            if execute_db_query(query, db_import_list) == False:
+                print('Ошибка импорта в БД')
+                return False
+
+    except Exception as exc:
+        print(exc)
+        return False
+
+
+# create_db()
+# query = """
+#     SELECT hosts.ip, shops.pid, shops.shop FROM hosts
+#     INNER JOIN shops ON hosts.shop_id = shops.id
+# """
+# a = execute_db_query(query)
+
+
+# import_independed_values('data.xlsx')
 
 
 # query = f"""
@@ -308,6 +335,15 @@ for i in a:
 #         ON aboba.sas_id = sas.id
 #         """
 # create_tables()
+
+
+# query = f"""
+#         SELECT * FROM tags
+#         """
+# a = execute_db_query(query)
+# for i in a:
+#     if i[2]:
+#         print(i)
 
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
