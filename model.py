@@ -288,16 +288,26 @@ def import_independed_values(file):
         }
         for import_value in db_fields:
             print(import_value)
+
+            query = f"""
+                    SELECT * FROM {import_value}
+                    """
+
+            available_values = []
+            for i in execute_db_query(query):
+                available_values.append(i[1])
+            print(available_values)
             db_import_list = []
             if import_value != 'tags':
                 for i in sheet[import_value]:
-                    db_import_list.append(tuple([i]))
+                    if i not in available_values and type(i) == str:
+                        db_import_list.append(tuple([i]))
                 query = f"""
                         INSERT INTO {import_value} ('{db_fields[import_value]}') VALUES(?);
                     """
             else:
                 for i in sheet.index:
-                    if type(sheet['tags'][i]) == str:
+                    if type(sheet['tags'][i]) == str and sheet['tags'][i] not in available_values:
                         if type(sheet['tag_value'][i]) == str:
                             db_import_list.append(
                                 tuple([sheet['tags'][i], sheet['tag_value'][i]]))
@@ -305,10 +315,12 @@ def import_independed_values(file):
                             db_import_list.append(
                                 tuple([sheet['tags'][i], '']))
                     else:
-                        break
+                        continue
                 query = f"""
                         INSERT INTO {import_value} ('{db_fields[import_value][0]}','{db_fields[import_value][1]}') VALUES(?, ?);
                     """
+            if not db_import_list:
+                continue
             if execute_db_query(query, db_import_list) == False:
                 print('Ошибка импорта в БД')
                 return False
@@ -326,7 +338,7 @@ def import_independed_values(file):
 # a = execute_db_query(query)
 
 
-# import_independed_values('data.xlsx')
+import_independed_values('data.xlsx')
 
 
 # query = f"""
@@ -341,10 +353,9 @@ def import_independed_values(file):
 #         SELECT * FROM tags
 #         """
 # a = execute_db_query(query)
+# available_values = []
 # for i in a:
-#     if i[2]:
-#         print(i)
-
+#     available_values.append
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)
 # for i in a:
