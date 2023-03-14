@@ -7,6 +7,7 @@ import requests
 import ast
 import sqlite3 as sq
 import pandas as pd
+import re
 
 logging.basicConfig(level=logging.INFO,
                     filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
@@ -37,11 +38,28 @@ def get_hosts_from_ws_db(host_type):
                 WHERE TYPE = '{host_type}' """
 
         cursor.execute(query)
-        result = list(cursor.fetchall())
+        result = {'status': True, 'message': '',
+                  'result': list(cursor.fetchall())}
         return result
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
+
+
+def get_shops_from_ws_db():
+    try:
+        conn = pyodbc.connect(
+            f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
+
+        cursor = conn.cursor()
+        query = f""" SELECT DISTINCT Expr1, Expr2 FROM dbo.CamInShops_r"""
+        cursor.execute(query)
+        result = {'status': True, 'message': '',
+                  'result': list(cursor.fetchall())}
+        return result
+    except Exception as exc:
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def send_request_to_zabbix(request):
@@ -53,10 +71,11 @@ def send_request_to_zabbix(request):
         decode_responce = decode_responce.replace('true', 'True')
         decode_responce = decode_responce.replace('false', 'False')
         dict_responce = ast.literal_eval(decode_responce)
-        return dict_responce
+        result = {'status': True, 'message': '', 'result': dict_responce}
+        return result
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def get_zabbix_auth_key():
@@ -71,13 +90,13 @@ def get_zabbix_auth_key():
             "id": 1
         }
 
-        responce = send_request_to_zabbix(login)
-        key = responce['result']
-        return key
+        responce = send_request_to_zabbix(login)['result']
+        result = {'status': True, 'message': '', 'result': responce['result']}
+        return result
 
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def get_hosts_from_zabbix(key, groupid, tag):
@@ -106,12 +125,12 @@ def get_hosts_from_zabbix(key, groupid, tag):
         if not tag:
             del request["params"]["tags"]
 
-        responce = send_request_to_zabbix(request)
-        result = responce['result']
+        responce = send_request_to_zabbix(request)['result']
+        result = {'status': True, 'message': '', 'result': responce['result']}
         return result
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def get_groups_from_zabbix(key):
@@ -126,12 +145,12 @@ def get_groups_from_zabbix(key):
             "id": 1
         }
 
-        responce = send_request_to_zabbix(request)
-        result = responce['result']
+        responce = send_request_to_zabbix(request)['result']
+        result = {'status': True, 'message': '', 'result': responce['result']}
         return result
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def import_hosts_to_zabbix(key, host_list):
@@ -172,7 +191,7 @@ def import_hosts_to_zabbix(key, host_list):
             "id": 1
         }
 
-        responce = send_request_to_zabbix(request)
+        responce = send_request_to_zabbix(request)['result']
         result = {'status': '', 'message': ''}
         if 'result' in responce:
             result['status'] = True
@@ -196,10 +215,11 @@ def execute_db_query(query, value_array=0):
         cursor = conn.cursor()
         if not value_array:
             cursor.execute(query)
-            result = cursor.fetchall()
+            result = {'status': True, 'message': '',
+                      'result': cursor.fetchall()}
         else:
             cursor.executemany(query, value_array)
-            result = True
+            result = {'status': True, 'message': ''}
         conn.commit()
         conn.close()
         return result
@@ -207,75 +227,81 @@ def execute_db_query(query, value_array=0):
     except Exception as exc:
         print(exc)
         conn.close()
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def create_db():
+    try:
+        query = """
+            CREATE TABLE IF NOT EXISTS "tags" (
+            "id"	INTEGER,
+            "tag"	TEXT UNIQUE,
+            "value"	TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+            );
+            """
+        execute_db_query(query)
 
-    query = """
-        CREATE TABLE IF NOT EXISTS "tags" (
-        "id"	INTEGER,
-        "tag"	TEXT UNIQUE,
-        "value"	TEXT,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
+        query = """
+            CREATE TABLE IF NOT EXISTS "groups" (
+            "id"	INTEGER,
+            "group"	TEXT UNIQUE,
+            PRIMARY KEY("id" AUTOINCREMENT)
+            );
+            """
+        execute_db_query(query)
+
+        query = """
+            CREATE TABLE IF NOT EXISTS "types" (
+            "id"	INTEGER,
+            "type"	TEXT UNIQUE,
+            PRIMARY KEY("id" AUTOINCREMENT)
+            );
+            """
+        execute_db_query(query)
+
+        query = """
+            CREATE TABLE IF NOT EXISTS "shops" (
+            "id"	INTEGER,
+            "pid"	INTEGER UNIQUE,
+            "shop"	TEXT UNIQUE,
+            "work_time"	TEXT,
+            "off_time"	TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+            );
         """
-    execute_db_query(query)
+        execute_db_query(query)
 
-    query = """
-        CREATE TABLE IF NOT EXISTS "groups" (
-        "id"	INTEGER,
-        "group"	TEXT UNIQUE,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
+        query = """
+            CREATE TABLE IF NOT EXISTS "hosts" (
+            "id"	INTEGER,
+            "ip"	TEXT UNIQUE,
+            "shop_id"	INTEGER,
+            "group_id"	INTEGER,
+            "type_id"	INTEGER,
+            PRIMARY KEY("id" AUTOINCREMENT),
+            FOREIGN KEY("shop_id") REFERENCES "shops"("id"),
+            FOREIGN KEY("group_id") REFERENCES "groups"("id"),
+            FOREIGN KEY("type_id") REFERENCES "types"("id")
+            );
         """
-    execute_db_query(query)
+        execute_db_query(query)
 
-    query = """
-        CREATE TABLE IF NOT EXISTS "types" (
-        "id"	INTEGER,
-        "type"	TEXT UNIQUE,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
+        query = """
+            CREATE TABLE IF NOT EXISTS "host_tag" (
+            "host_id"	INTEGER,
+            "tag_id"	INTEGER,
+            FOREIGN KEY("host_id") REFERENCES "hosts"("id"),
+            FOREIGN KEY("tag_id") REFERENCES "tags"("id")
+            );
         """
-    execute_db_query(query)
-
-    query = """
-        CREATE TABLE IF NOT EXISTS "shops" (
-        "id"	INTEGER,
-        "pid"	INTEGER UNIQUE,
-        "shop"	TEXT UNIQUE,
-        "work_time"	TEXT,
-        "off_time"	TEXT,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
-    """
-    execute_db_query(query)
-
-    query = """
-        CREATE TABLE IF NOT EXISTS "hosts" (
-        "id"	INTEGER,
-        "ip"	TEXT UNIQUE,
-        "shop_id"	INTEGER,
-        "group_id"	INTEGER,
-        "type_id"	INTEGER,
-        PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("shop_id") REFERENCES "shops"("id"),
-        FOREIGN KEY("group_id") REFERENCES "groups"("id"),
-        FOREIGN KEY("type_id") REFERENCES "types"("id")
-        );
-    """
-    execute_db_query(query)
-
-    query = """
-        CREATE TABLE IF NOT EXISTS "host_tag" (
-        "host_id"	INTEGER,
-        "tag_id"	INTEGER,
-        FOREIGN KEY("host_id") REFERENCES "hosts"("id"),
-        FOREIGN KEY("tag_id") REFERENCES "tags"("id")
-        );
-    """
-    execute_db_query(query)
+        execute_db_query(query)
+        result = {'status': True, 'message': ''}
+        return result
+    except Exception as exc:
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def import_independed_values(file):
@@ -287,15 +313,13 @@ def import_independed_values(file):
             'tags': ['tag', 'value'],
         }
         for field_name in db_fields:
-            # print(field_name)
             query = f"""
                     SELECT * FROM {field_name}
                     """
-
             available_values = []
-            for i in execute_db_query(query):
+            for i in execute_db_query(query)['result']:
                 available_values.append(i[1])
-            # print(available_values)
+            print(available_values)
             db_import_list = []
             if field_name != 'tags':
                 for i in sheet[field_name]:
@@ -320,26 +344,91 @@ def import_independed_values(file):
                     """
             if not db_import_list:
                 continue
-            if execute_db_query(query, db_import_list) == False:
+            if execute_db_query(query, db_import_list)['status'] == False:
                 print('Ошибка импорта в поле БД:', field_name)
-                return False
+                result = {'status': False,
+                          'message': f"Ошибка импорта в поле БД: {field_name}"}
+                return result
+        result = {'status': True, 'message': ''}
+        return result
+    except Exception as exc:
+        result = {'status': False, 'message': exc}
+        return result
+
+
+def get_all_shops_from_xls(file):
+    try:
+        sheet = pd.read_excel(file)
+        shops = []
+        for i in sheet.index:
+            if type(sheet['График работы'][i]) == str:
+                temp = re.findall(f'\d\d:\d\d-\d\d:\d\d',
+                                  sheet['График работы'][i])
+                if temp:
+                    temp_work_time = temp[0]
+                else:
+                    # print('Время не найдено')
+                    continue
+            else:
+                continue
+            start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+
+            start_time = pd.to_datetime(start_stop[0], format='%H:%M')
+            end_time = pd.to_datetime(start_stop[1], format='%H:%M')
+
+            try:
+                dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
+                start_time -= dif
+                end_time -= dif
+            except:
+                pass
+
+            off_time = 24 - int((end_time - start_time) /
+                                pd.Timedelta('1 hour'))
+            work_time = f'{str(start_time)[11:16]}-{str(end_time)[11:16]}'
+            shops.append(
+                (sheet['PT_ID'][i], sheet['Магазин'][i], work_time, off_time))
+
+        result = {'status': True, 'message': '', 'result': shops}
+        return result
 
     except Exception as exc:
-        print(exc)
-        return False
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def import_shops():
+    try:
+        file = r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls'
+        all_shop_list = get_all_shops_from_xls(file)
+        if not all_shop_list['status']:
+            result = {'status': False,
+                      'message': "Can't get shop list from xls"}
+            return result
 
-    # create_db()
-    # query = """
-    #     SELECT hosts.ip, shops.pid, shops.shop FROM hosts
-    #     INNER JOIN shops ON hosts.shop_id = shops.id
-    # """
-    # a = execute_db_query(query)
+        all_shop_list = all_shop_list['result']
+        # for i in all_shop_list:
+        #     print(i)
+
+    except Exception as exc:
+        result = {'status': False, 'message': exc, 'result': ''}
+        return result
 
 
-import_independed_values('data.xlsx')
+# print(import_shops())
+sas = get_shops_from_ws_db()
+for i in sas['result']:
+    print(i)
+
+# create_db()
+# query = """
+#     SELECT hosts.ip, shops.pid, shops.shop FROM hosts
+#     INNER JOIN shops ON hosts.shop_id = shops.id
+# """
+# a = execute_db_query(query)
+
+
+# import_independed_values('data.xlsx')
 
 
 # query = f"""
@@ -358,10 +447,10 @@ import_independed_values('data.xlsx')
 # for i in a:
 #     available_values.append
 # host = 'Гл. касса'
-# a = get_hosts_from_ws_db(host)
+# a = get_hosts_from_ws_db(host)['result']
 # for i in a:
 #     print(i)
-key = get_zabbix_auth_key()
+# key = get_zabbix_auth_key()['result']
 # print(key)
 
 # hosts = get_hosts_from_zabbix(key, groupid=0, tag='')
