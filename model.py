@@ -286,24 +286,23 @@ def import_independed_values(file):
             'types': 'type',
             'tags': ['tag', 'value'],
         }
-        for import_value in db_fields:
-            print(import_value)
-
+        for field_name in db_fields:
+            # print(field_name)
             query = f"""
-                    SELECT * FROM {import_value}
+                    SELECT * FROM {field_name}
                     """
 
             available_values = []
             for i in execute_db_query(query):
                 available_values.append(i[1])
-            print(available_values)
+            # print(available_values)
             db_import_list = []
-            if import_value != 'tags':
-                for i in sheet[import_value]:
+            if field_name != 'tags':
+                for i in sheet[field_name]:
                     if i not in available_values and type(i) == str:
                         db_import_list.append(tuple([i]))
                 query = f"""
-                        INSERT INTO {import_value} ('{db_fields[import_value]}') VALUES(?);
+                        INSERT INTO {field_name} ('{db_fields[field_name]}') VALUES(?);
                     """
             else:
                 for i in sheet.index:
@@ -317,12 +316,12 @@ def import_independed_values(file):
                     else:
                         continue
                 query = f"""
-                        INSERT INTO {import_value} ('{db_fields[import_value][0]}','{db_fields[import_value][1]}') VALUES(?, ?);
+                        INSERT INTO {field_name} ('{db_fields[field_name][0]}','{db_fields[field_name][1]}') VALUES(?, ?);
                     """
             if not db_import_list:
                 continue
             if execute_db_query(query, db_import_list) == False:
-                print('Ошибка импорта в БД')
+                print('Ошибка импорта в поле БД:', field_name)
                 return False
 
     except Exception as exc:
@@ -330,12 +329,14 @@ def import_independed_values(file):
         return False
 
 
-# create_db()
-# query = """
-#     SELECT hosts.ip, shops.pid, shops.shop FROM hosts
-#     INNER JOIN shops ON hosts.shop_id = shops.id
-# """
-# a = execute_db_query(query)
+def import_shops():
+
+    # create_db()
+    # query = """
+    #     SELECT hosts.ip, shops.pid, shops.shop FROM hosts
+    #     INNER JOIN shops ON hosts.shop_id = shops.id
+    # """
+    # a = execute_db_query(query)
 
 
 import_independed_values('data.xlsx')

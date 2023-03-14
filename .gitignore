@@ -8,3 +8,6 @@ database.db
 db_schema.drawio
 data.xlsx
 sas.py
+test магазины.xlsx
+.gitignore
+~$test магазины.xlsx
