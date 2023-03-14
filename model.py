@@ -357,57 +357,115 @@ def import_independed_values(file):
 
 
 def get_all_shops_from_xls(file):
-    try:
-        sheet = pd.read_excel(file)
-        shops = []
-        for i in sheet.index:
-            if type(sheet['График работы'][i]) == str:
-                temp = re.findall(f'\d\d:\d\d-\d\d:\d\d',
+    # try:
+    sheet = pd.read_excel(file)
+    shops = []
+    for i in sheet.index:
+        if type(sheet['График работы'][i]) == str:
+            temp = re.findall(f'\d\d:\d\d-\d\d:\d\d',
+                              sheet['График работы'][i])
+
+            if temp:
+                temp_work_time = temp[0]
+                start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+                start_time = pd.to_datetime(start_stop[0], format='%H:%M')
+                end_time = pd.to_datetime(start_stop[1], format='%H:%M')
+            else:
+                temp = re.findall(f'\d:\d\d-\d\d:\d\d',
                                   sheet['График работы'][i])
                 if temp:
                     temp_work_time = temp[0]
+                    # print(temp_work_time)
+                    start_time = pd.to_datetime(re.findall(
+                        f'\d:\d\d', temp_work_time)[0], format='%H:%M')
+                    end_time = pd.to_datetime(re.findall(
+                        f'\d\d:\d\d', temp_work_time)[0], format='%H:%M')
+
                 else:
-                    # print('Время не найдено')
-                    continue
-            else:
-                continue
-            start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+                    temp = re.findall(f'\d\d:\d\d - \d\d:\d\d',
+                                      sheet['График работы'][i])
+                    if temp:
+                        temp_work_time = temp[0]
+                        start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+                        start_time = pd.to_datetime(
+                            start_stop[0], format='%H:%M')
+                        end_time = pd.to_datetime(
+                            start_stop[1], format='%H:%M')
+                    else:
+                        print(sheet['PT_ID'][i])
+                        continue
+        else:
+            continue
+        # start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
 
-            start_time = pd.to_datetime(start_stop[0], format='%H:%M')
-            end_time = pd.to_datetime(start_stop[1], format='%H:%M')
+        # start_time = pd.to_datetime(start_stop[0], format='%H:%M')
+        # end_time = pd.to_datetime(start_stop[1], format='%H:%M')
 
-            try:
-                dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
-                start_time -= dif
-                end_time -= dif
-            except:
-                pass
+        try:
+            dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
+            start_time -= dif
+            end_time -= dif
+        except:
+            pass
 
-            off_time = 24 - int((end_time - start_time) /
-                                pd.Timedelta('1 hour'))
-            work_time = f'{str(start_time)[11:16]}-{str(end_time)[11:16]}'
-            shops.append(
-                (sheet['PT_ID'][i], sheet['Магазин'][i], work_time, off_time))
+        off_time = 24 - int((end_time - start_time) /
+                            pd.Timedelta('1 hour'))
 
-        result = {'status': True, 'message': '', 'result': shops}
-        return result
+        work_time = f'{str(start_time)[11:16]}-{str(end_time)[11:16]}'
+        shops.append(
+            (sheet['PT_ID'][i], sheet['Магазин'][i], work_time, off_time))
 
-    except Exception as exc:
-        result = {'status': False, 'message': exc}
-        return result
+    result = {'status': True, 'message': '', 'result': shops}
+    return result
+
+    # except Exception as exc:
+    #     result = {'status': False, 'message': exc}
+    #     return result
 
 
 def import_shops():
     try:
+        # получение всех магазинов из Магазинов в цифрах
         file = r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls'
-        all_shop_list = get_all_shops_from_xls(file)
-        if not all_shop_list['status']:
+        shops_from_xls = get_all_shops_from_xls(file)
+        if not shops_from_xls['status']:
             result = {'status': False,
                       'message': "Can't get shop list from xls"}
             return result
+        shops_from_xls = shops_from_xls['result']
+        print('from xls:', len(shops_from_xls))
+        dict_shops_from_xls = {}
+        for i in range(len(shops_from_xls)):
+            dict_shops_from_xls[shops_from_xls[i][0]] = shops_from_xls[i]
+        print(len(dict_shops_from_xls))
+        for i in dict_shops_from_xls:
+            # print(i, dict_shops_from_xls[i])
+            logging.info(f'{i} - {dict_shops_from_xls[i]}')
+        # получения списка PIDов из WS
+        shops_from_ws = get_shops_from_ws_db()
+        if not shops_from_ws['status']:
+            result = {'status': False,
+                      'message': "Can't get shop list from WS"}
+            return result
+        shops_from_ws = shops_from_ws['result']
+        pid_list = []
+        for shop in shops_from_ws:
+            pid_list.append(shop[0])
+        print('pid list:', len(pid_list))
+        # создание актуального списка магазинов
+        actual_shop_list = []
+        for pid in pid_list:
+            if pid in dict_shops_from_xls:
+                actual_shop_list.append(dict_shops_from_xls[pid])
+            else:
+                print('AAAA', pid)
+        # for i in actual_shop_list:
+        #     print(i)
+        print(len(dict_shops_from_xls))
+        print(len(actual_shop_list))
 
-        all_shop_list = all_shop_list['result']
-        # for i in all_shop_list:
+        # print(pid_list)
+        # for i in shops_from_xls:
         #     print(i)
 
     except Exception as exc:
@@ -415,10 +473,16 @@ def import_shops():
         return result
 
 
-# print(import_shops())
-sas = get_shops_from_ws_db()
-for i in sas['result']:
-    print(i)
+print(import_shops())
+
+# a = get_all_shops_from_xls(
+#     r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls')
+# for i in a['result']:
+#     print(i)
+
+# sas = get_shops_from_ws_db()
+# for i in sas['result']:
+#     print(i)
 
 # create_db()
 # query = """
