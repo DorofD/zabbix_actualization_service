@@ -176,7 +176,7 @@ def import_hosts_to_zabbix(key, host_list):
                     "discoveryRules": {"createMissing": True, "updateExisting": True},
                     "graphs": {"createMissing": True, "updateExisting": True},
                     "groups": {"createMissing": True},
-                    "hosts": {"createMissing": True, "updateExisting": True},
+                    "hosts": {"createMissing": True, "updateExisting": False},
                     "images": {"createMissing": True, "updateExisting": True},
                     "items": {"createMissing": True, "updateExisting": True},
                     "maps": {"createMissing": True, "updateExisting": True},
@@ -398,10 +398,6 @@ def get_all_shops_from_xls(file):
                             continue
             else:
                 continue
-            # start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
-
-            # start_time = pd.to_datetime(start_stop[0], format='%H:%M')
-            # end_time = pd.to_datetime(start_stop[1], format='%H:%M')
 
             try:
                 dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
@@ -510,12 +506,6 @@ def import_shops():
 # create_db()
 print(import_shops())
 
-
-# a = get_all_shops_from_xls(
-#     r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls')
-# for i in a['result']:
-#     # print(i)
-#     logging.info(i)
 
 # sas = get_shops_from_ws_db()
 # for i in sas['result']:
