@@ -24,6 +24,7 @@ DB_DRIVER = os.environ['DB_DRIVER']
 ZABBIX_SERVER = os.environ['ZABBIX_SERVER']
 ZABBIX_USER = os.environ['ZABBIX_USER']
 ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
+EXPORT_XLS_FILE = os.environ['EXPORT_XLS_FILE']
 
 
 def get_hosts_from_ws_db(host_type):
@@ -267,7 +268,7 @@ def create_db():
             "pid"	INTEGER UNIQUE,
             "shop"	TEXT UNIQUE,
             "work_time"	TEXT,
-            "off_time"	TEXT,
+            "off_time"	INTEGER,
             PRIMARY KEY("id" AUTOINCREMENT)
             );
         """
@@ -357,91 +358,87 @@ def import_independed_values(file):
 
 
 def get_all_shops_from_xls(file):
-    # try:
-    sheet = pd.read_excel(file)
-    shops = []
-    for i in sheet.index:
-        if type(sheet['График работы'][i]) == str:
-            temp = re.findall(f'\d\d:\d\d-\d\d:\d\d',
-                              sheet['График работы'][i])
-
-            if temp:
-                temp_work_time = temp[0]
-                start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
-                start_time = pd.to_datetime(start_stop[0], format='%H:%M')
-                end_time = pd.to_datetime(start_stop[1], format='%H:%M')
-            else:
-                temp = re.findall(f'\d:\d\d-\d\d:\d\d',
+    try:
+        sheet = pd.read_excel(file)
+        shops = []
+        for i in sheet.index:
+            if type(sheet['График работы'][i]) == str:
+                temp = re.findall(f'\d\d:\d\d-\d\d:\d\d',
                                   sheet['График работы'][i])
+
                 if temp:
                     temp_work_time = temp[0]
-                    # print(temp_work_time)
-                    start_time = pd.to_datetime(re.findall(
-                        f'\d:\d\d', temp_work_time)[0], format='%H:%M')
-                    end_time = pd.to_datetime(re.findall(
-                        f'\d\d:\d\d', temp_work_time)[0], format='%H:%M')
-
+                    start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+                    start_time = pd.to_datetime(start_stop[0], format='%H:%M')
+                    end_time = pd.to_datetime(start_stop[1], format='%H:%M')
                 else:
-                    temp = re.findall(f'\d\d:\d\d - \d\d:\d\d',
+                    temp = re.findall(f'\d:\d\d-\d\d:\d\d',
                                       sheet['График работы'][i])
                     if temp:
                         temp_work_time = temp[0]
-                        start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
-                        start_time = pd.to_datetime(
-                            start_stop[0], format='%H:%M')
-                        end_time = pd.to_datetime(
-                            start_stop[1], format='%H:%M')
+                        # print(temp_work_time)
+                        start_time = pd.to_datetime(re.findall(
+                            f'\d:\d\d', temp_work_time)[0], format='%H:%M')
+                        end_time = pd.to_datetime(re.findall(
+                            f'\d\d:\d\d', temp_work_time)[0], format='%H:%M')
+
                     else:
-                        print(sheet['PT_ID'][i])
-                        continue
-        else:
-            continue
-        # start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
+                        temp = re.findall(f'\d\d:\d\d - \d\d:\d\d',
+                                          sheet['График работы'][i])
+                        if temp:
+                            temp_work_time = temp[0]
+                            start_stop = re.findall(
+                                f'\d\d:\d\d', temp_work_time)
+                            start_time = pd.to_datetime(
+                                start_stop[0], format='%H:%M')
+                            end_time = pd.to_datetime(
+                                start_stop[1], format='%H:%M')
+                        else:
+                            print(sheet['PT_ID'][i])
+                            continue
+            else:
+                continue
+            # start_stop = re.findall(f'\d\d:\d\d', temp_work_time)
 
-        # start_time = pd.to_datetime(start_stop[0], format='%H:%M')
-        # end_time = pd.to_datetime(start_stop[1], format='%H:%M')
+            # start_time = pd.to_datetime(start_stop[0], format='%H:%M')
+            # end_time = pd.to_datetime(start_stop[1], format='%H:%M')
 
-        try:
-            dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
-            start_time -= dif
-            end_time -= dif
-        except:
-            pass
+            try:
+                dif = pd.Timedelta(hours=int(sheet['Разница во времени'][i]))
+                start_time -= dif
+                end_time -= dif
+            except:
+                pass
 
-        off_time = 24 - int((end_time - start_time) /
-                            pd.Timedelta('1 hour'))
+            off_time = 24 - int((end_time - start_time) /
+                                pd.Timedelta('1 hour'))
 
-        work_time = f'{str(start_time)[11:16]}-{str(end_time)[11:16]}'
-        shops.append(
-            (sheet['PT_ID'][i], sheet['Магазин'][i], work_time, off_time))
+            work_time = f'{str(start_time)[11:16]}-{str(end_time)[11:16]}'
+            shops.append(
+                (int(sheet['PT_ID'][i]), sheet['Магазин'][i], work_time, off_time))
 
-    result = {'status': True, 'message': '', 'result': shops}
-    return result
+        result = {'status': True, 'message': '', 'result': shops}
+        return result
 
-    # except Exception as exc:
-    #     result = {'status': False, 'message': exc}
-    #     return result
+    except Exception as exc:
+        result = {'status': False, 'message': exc}
+        return result
 
 
 def import_shops():
     try:
         # получение всех магазинов из Магазинов в цифрах
-        file = r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls'
-        shops_from_xls = get_all_shops_from_xls(file)
+        shops_from_xls = get_all_shops_from_xls(EXPORT_XLS_FILE)
         if not shops_from_xls['status']:
             result = {'status': False,
                       'message': "Can't get shop list from xls"}
             return result
         shops_from_xls = shops_from_xls['result']
-        print('from xls:', len(shops_from_xls))
-        dict_shops_from_xls = {}
+        shops_from_xls_dict = {}
         for i in range(len(shops_from_xls)):
-            dict_shops_from_xls[shops_from_xls[i][0]] = shops_from_xls[i]
-        print(len(dict_shops_from_xls))
-        for i in dict_shops_from_xls:
-            # print(i, dict_shops_from_xls[i])
-            logging.info(f'{i} - {dict_shops_from_xls[i]}')
-        # получения списка PIDов из WS
+            shops_from_xls_dict[shops_from_xls[i][0]] = shops_from_xls[i]
+
+        # получение списка PIDов из WS
         shops_from_ws = get_shops_from_ws_db()
         if not shops_from_ws['status']:
             result = {'status': False,
@@ -451,34 +448,74 @@ def import_shops():
         pid_list = []
         for shop in shops_from_ws:
             pid_list.append(shop[0])
-        print('pid list:', len(pid_list))
-        # создание актуального списка магазинов
-        actual_shop_list = []
+
+        # создание словаря из магазинов в WS
+        actual_shop_dict = {}
         for pid in pid_list:
-            if pid in dict_shops_from_xls:
-                actual_shop_list.append(dict_shops_from_xls[pid])
+            if pid in shops_from_xls_dict:
+                actual_shop_dict[pid] = shops_from_xls_dict[pid]
             else:
-                print('AAAA', pid)
-        # for i in actual_shop_list:
-        #     print(i)
-        print(len(dict_shops_from_xls))
-        print(len(actual_shop_list))
+                logging.error('Shop not in xls ', i)
 
-        # print(pid_list)
-        # for i in shops_from_xls:
-        #     print(i)
+        # создание словаря магазинов из локальной БД
+        query = """
+            SELECT pid, shop, work_time, off_time FROM shops
+        """
+        shops_from_local_db_list = execute_db_query(query)
+        if not shops_from_local_db_list['status']:
+            result = {'status': False,
+                      'message': "Can't get shop list from local DB"}
+            return result
+        shops_from_local_db_list = shops_from_local_db_list['result']
+        shops_from_local_db_dict = {}
+        for i in shops_from_local_db_list:
+            shops_from_local_db_dict[i[0]] = i
 
+        # сортировка магазинов на добавляемые и изменяемые
+        add_shop_list = []
+        change_shop_list = []
+        for pid in actual_shop_dict:
+            if pid not in shops_from_local_db_dict:
+                add_shop_list.append(actual_shop_dict[pid])
+            else:
+                change_shop_list.append(actual_shop_dict[pid])
+
+        # добавление отсутствующих магазинов
+        query = f"""
+                    INSERT INTO shops ('pid', 'shop', 'work_time', 'off_time') VALUES(?, ?, ?, ?);
+                """
+        add_count = len(add_shop_list)
+        update_count = 0
+        if add_shop_list:
+            execute_db_query(query, add_shop_list)
+
+        # обновление значений измененных магазинов
+        for shop in change_shop_list:
+            if shop not in shops_from_local_db_list:
+                query = f"""
+                            UPDATE shops SET (work_time, off_time) = ('{shop[2]}', '{shop[3]}')
+                            WHERE pid = '{shop[0]}';
+                        """
+                update_count += 1
+                execute_db_query(query)
+
+        result = {'status': True,
+                  'message': f'shops added: {add_count}, shops updated: {update_count}', 'result': ''}
+        return result
     except Exception as exc:
         result = {'status': False, 'message': exc, 'result': ''}
         return result
 
 
+# create_db()
 print(import_shops())
+
 
 # a = get_all_shops_from_xls(
 #     r'\\bookcentre\root\IA_DIVIZION\Public\МАГАЗИНЫ\Магазины в цифрах ЧГ.xls')
 # for i in a['result']:
-#     print(i)
+#     # print(i)
+#     logging.info(i)
 
 # sas = get_shops_from_ws_db()
 # for i in sas['result']:
@@ -534,5 +571,5 @@ print(import_shops())
 # ]
 # print(import_hosts_to_zabbix(key, host_list=hosts))
 
-logging.info('info')
-logging.error('error')
+# logging.info('info')
+# logging.error('error')
