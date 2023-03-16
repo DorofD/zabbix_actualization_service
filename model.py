@@ -257,19 +257,20 @@ def create_db():
             CREATE TABLE IF NOT EXISTS "types" (
             "id"	INTEGER,
             "type"	TEXT UNIQUE,
-            PRIMARY KEY("id" AUTOINCREMENT)
+            "group_id"  INTEGER,
+            PRIMARY KEY("id" AUTOINCREMENT),
+            FOREIGN KEY("group_id") REFERENCES "groups"("id")
             );
             """
         execute_db_query(query)
 
         query = """
             CREATE TABLE IF NOT EXISTS "shops" (
-            "id"	INTEGER,
             "pid"	INTEGER UNIQUE,
             "shop"	TEXT UNIQUE,
             "work_time"	TEXT,
             "off_time"	INTEGER,
-            PRIMARY KEY("id" AUTOINCREMENT)
+            PRIMARY KEY("pid")
             );
         """
         execute_db_query(query)
@@ -278,12 +279,10 @@ def create_db():
             CREATE TABLE IF NOT EXISTS "hosts" (
             "id"	INTEGER,
             "ip"	TEXT UNIQUE,
-            "shop_id"	INTEGER,
-            "group_id"	INTEGER,
+            "shop_pid"	INTEGER,
             "type_id"	INTEGER,
             PRIMARY KEY("id" AUTOINCREMENT),
-            FOREIGN KEY("shop_id") REFERENCES "shops"("id"),
-            FOREIGN KEY("group_id") REFERENCES "groups"("id"),
+            FOREIGN KEY("shop_pid") REFERENCES "shops"("pid"),
             FOREIGN KEY("type_id") REFERENCES "types"("id")
             );
         """
@@ -298,6 +297,7 @@ def create_db():
             );
         """
         execute_db_query(query)
+
         result = {'status': True, 'message': ''}
         return result
     except Exception as exc:
@@ -305,56 +305,166 @@ def create_db():
         return result
 
 
-def import_independed_values(file):
+def import_host_parameters(file):
     try:
         sheet = pd.read_excel(file)
-        db_fields = {
-            'groups': 'group',
-            'types': 'type',
-            'tags': ['tag', 'value'],
-        }
-        for field_name in db_fields:
-            query = f"""
-                    SELECT * FROM {field_name}
+
+        # импорт groups
+        query = f"""
+                    SELECT * FROM groups
                     """
-            available_values = []
-            for i in execute_db_query(query)['result']:
-                available_values.append(i[1])
-            print(available_values)
-            db_import_list = []
-            if field_name != 'tags':
-                for i in sheet[field_name]:
-                    if i not in available_values and type(i) == str:
-                        db_import_list.append(tuple([i]))
-                query = f"""
-                        INSERT INTO {field_name} ('{db_fields[field_name]}') VALUES(?);
+        groups_from_local_db = execute_db_query(query)
+        if groups_from_local_db['status'] == False:
+            result = {'status': False,
+                      'message': "Can't get groups from local DB"}
+            return result
+        current_groups_list = []
+        for group in groups_from_local_db['result']:
+            current_groups_list.append(group[1])
+        groups_to_add = []
+        for cell in sheet['groups']:
+            if cell not in current_groups_list and type(cell) == str:
+                groups_to_add.append(tuple([cell]))
+        groups_add_count = len(groups_to_add)
+        query = f"""
+                    INSERT INTO groups ('group') VALUES(?);
+                """
+        if groups_to_add:
+            if execute_db_query(query, groups_to_add)['status'] == False:
+                result = {'status': False,
+                          'message': "Can't insert groups"}
+                return result
+
+        # импорт types
+        query = f"""
+                    SELECT * FROM groups
                     """
-            else:
-                for i in sheet.index:
-                    if type(sheet['tags'][i]) == str and sheet['tags'][i] not in available_values:
-                        if type(sheet['tag_value'][i]) == str:
-                            db_import_list.append(
-                                tuple([sheet['tags'][i], sheet['tag_value'][i]]))
-                        else:
-                            db_import_list.append(
-                                tuple([sheet['tags'][i], '']))
+        groups_from_local_db = execute_db_query(query)
+        if groups_from_local_db['status'] == False:
+            result = {'status': False,
+                      'message': "Can't get groups from local DB"}
+            return result
+
+        query = f"""
+                    SELECT * FROM types
+                """
+        types_from_local_db = execute_db_query(query)
+        if types_from_local_db['status'] == False:
+            result = {'status': False,
+                      'message': "Can't get types from local DB"}
+            return result
+
+        groups_dict = {}
+        for group in groups_from_local_db['result']:
+            groups_dict[group[1]] = group[0]
+
+        current_types_dict = {}
+        for host_type in types_from_local_db['result']:
+            current_types_dict[host_type[1]] = tuple(
+                [host_type[1], host_type[2]])
+        types_to_add = []
+        types_to_update = []
+        for i in sheet.index:
+            if type(sheet['types'][i]) == str:
+                if sheet['type_group'][i] in groups_dict:
+                    num = groups_dict[sheet['type_group'][i]]
+                    if sheet['types'][i] not in current_types_dict:
+                        types_to_add.append(
+                            tuple([sheet['types'][i], groups_dict[sheet['type_group'][i]]]))
+                    elif groups_dict[sheet['type_group'][i]] != current_types_dict[sheet['types'][i]][1]:
+                        types_to_update.append(
+                            tuple([sheet['types'][i], groups_dict[sheet['type_group'][i]]]))
                     else:
                         continue
-                query = f"""
-                        INSERT INTO {field_name} ('{db_fields[field_name][0]}','{db_fields[field_name][1]}') VALUES(?, ?);
+                else:
+                    result = {'status': False,
+                              'message': "Unknown group in import file"}
+                    return result
+
+        # добавление отсутствующих типов
+        query = f"""
+                    INSERT INTO types ('type', 'group_id') VALUES(?, ?);
+                """
+        types_add_count = len(types_to_add)
+        if types_to_add:
+            if execute_db_query(query, types_to_add)['status'] == False:
+                result = {'status': True,
+                          'message': 'Error types adding', 'result': ''}
+
+        # обновление значений измененных типов
+        types_update_count = 0
+        for host_type in types_to_update:
+            query = f"""
+                        UPDATE types SET (group_id) = ('{host_type[1]}')
+                        WHERE type = '{host_type[0]}';
                     """
-            if not db_import_list:
-                continue
-            if execute_db_query(query, db_import_list)['status'] == False:
-                print('Ошибка импорта в поле БД:', field_name)
-                result = {'status': False,
-                          'message': f"Ошибка импорта в поле БД: {field_name}"}
-                return result
-        result = {'status': True, 'message': ''}
+            groups_update_count += 1
+            execute_db_query(query)
+
+        # импорт tags
+        query = """
+            SELECT tag, value FROM tags
+        """
+        tags_from_local_db = execute_db_query(query)
+        if tags_from_local_db['status'] == False:
+            result = {'status': False,
+                      'message': "Can't get tags from local DB"}
+            return result
+
+        current_tags_dict = {}
+        for tag in tags_from_local_db['result']:
+            current_tags_dict[tag[0]] = tag
+
+        tags_to_add = []
+        tags_to_update = []
+        for i in sheet.index:
+            if type(sheet['tags'][i]) == str:
+                if sheet['tags'][i] not in current_tags_dict:
+                    if type(sheet['tag_value'][i]) == str:
+                        tags_to_add.append(tuple(
+                            [sheet['tags'][i], sheet['tag_value'][i]]))
+                    else:
+                        tags_to_add.append(tuple(
+                            [sheet['tags'][i], '']))
+                elif sheet['tag_value'][i] != current_tags_dict[sheet['tags'][i]][1]:
+                    if type(sheet['tag_value'][i]) == str or type(sheet['tag_value'][i]) == int:
+                        tags_to_update.append(tuple(
+                            [sheet['tags'][i], sheet['tag_value'][i]]))
+                    elif type(sheet['tag_value'][i]) == float:
+                        tags_to_update.append(tuple(
+                            [sheet['tags'][i], '']))
+                    else:
+                        continue
+
+        # добавление отсутствующих тегов
+        query = f"""
+                    INSERT INTO tags ('tag', 'value') VALUES(?, ?);
+                """
+        tags_add_count = len(tags_to_add)
+        if tags_to_add:
+            if execute_db_query(query, tags_to_add)['status'] == False:
+                result = {'status': True,
+                          'message': 'Error tags adding', 'result': ''}
+
+        # обновление значений измененных тегов
+        tags_update_count = 0
+        for tag in tags_to_update:
+            query = f"""
+                        UPDATE tags SET (value) = ('{tag[1]}')
+                        WHERE tag = '{tag[0]}';
+                    """
+            tags_update_count += 1
+            execute_db_query(query)
+
+        result = {'status': True, 'message': f"groups add: {groups_add_count}, types add/update: {types_add_count}/{types_update_count}, tags add/update: {tags_add_count}/{tags_update_count}"}
         return result
+
     except Exception as exc:
         result = {'status': False, 'message': exc}
         return result
+
+
+print(import_host_parameters('data.xlsx'))
 
 
 def get_all_shops_from_xls(file):
@@ -394,7 +504,7 @@ def get_all_shops_from_xls(file):
                             end_time = pd.to_datetime(
                                 start_stop[1], format='%H:%M')
                         else:
-                            print(sheet['PT_ID'][i])
+                            # print(sheet['PT_ID'][i])
                             continue
             else:
                 continue
@@ -504,7 +614,8 @@ def import_shops():
 
 
 # create_db()
-print(import_shops())
+# print(import_host_parameters('data.xlsx'))
+# print(import_shops())
 
 
 # sas = get_shops_from_ws_db()
@@ -519,7 +630,7 @@ print(import_shops())
 # a = execute_db_query(query)
 
 
-# import_independed_values('data.xlsx')
+# import_host_parameters('data.xlsx')
 
 
 # query = f"""
@@ -534,9 +645,9 @@ print(import_shops())
 #         SELECT * FROM tags
 #         """
 # a = execute_db_query(query)
-# available_values = []
+# current_values = []
 # for i in a:
-#     available_values.append
+#     current_values.append
 # host = 'Гл. касса'
 # a = get_hosts_from_ws_db(host)['result']
 # for i in a:
