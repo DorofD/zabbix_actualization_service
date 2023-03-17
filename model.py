@@ -63,6 +63,22 @@ def get_shops_from_ws_db():
         return result
 
 
+def get_types_from_ws_db():
+    try:
+        conn = pyodbc.connect(
+            f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
+
+        cursor = conn.cursor()
+        query = f""" SELECT DISTINCT type FROM dbo.CamInShops_r"""
+        cursor.execute(query)
+        result = {'status': True, 'message': '',
+                  'result': list(cursor.fetchall())}
+        return result
+    except Exception as exc:
+        result = {'status': False, 'message': exc}
+        return result
+
+
 def send_request_to_zabbix(request):
     try:
         responce = requests.post(
@@ -464,10 +480,7 @@ def import_host_parameters(file):
         return result
 
 
-print(import_host_parameters('data.xlsx'))
-
-
-def get_all_shops_from_xls(file):
+def get_shops_from_xls(file):
     try:
         sheet = pd.read_excel(file)
         shops = []
@@ -534,7 +547,7 @@ def get_all_shops_from_xls(file):
 def import_shops():
     try:
         # получение всех магазинов из Магазинов в цифрах
-        shops_from_xls = get_all_shops_from_xls(EXPORT_XLS_FILE)
+        shops_from_xls = get_shops_from_xls(EXPORT_XLS_FILE)
         if not shops_from_xls['status']:
             result = {'status': False,
                       'message': "Can't get shop list from xls"}
@@ -612,6 +625,95 @@ def import_shops():
         result = {'status': False, 'message': exc, 'result': ''}
         return result
 
+
+def import_hosts(types=[]):
+    # получение типов из WS
+    types_from_ws = get_types_from_ws_db()
+    if types_from_ws['status'] == False:
+        result = {'status': False, 'message': "Can't get types from WS"}
+        return result
+    types_from_ws = types_from_ws['result']
+    types_from_ws_list = []
+    for host_type in types_from_ws:
+        types_from_ws_list.append(host_type[0])
+
+    # получение типов из локальной БД
+    query = """
+            SELECT * FROM types
+        """
+    types_from_local_db = execute_db_query(query)
+    if types_from_local_db['status'] == False:
+        result = {'status': False, 'message': "Can't get types from local DB"}
+        return result
+    types_from_local_db_dict = {}
+    for host_type in types_from_local_db['result']:
+        types_from_local_db_dict[host_type[1]] = host_type
+
+    # проверка совпадения типов в локальной БД и БД WS
+    for host_type in types_from_local_db_dict:
+        if host_type not in types_from_ws_list:
+            result = {'status': False,
+                      'message': f"Unknown type in local DB: {host_type}"}
+            return result
+    for host_type in types_from_ws_list:
+        if host_type not in types_from_local_db_dict:
+            result = {'status': False,
+                      'message': f"Unknown type in WS DB: {host_type}"}
+            return result
+    types_dict = types_from_local_db_dict
+
+    # выбор финального списка типов для импорта
+    if types:
+        for host_type in types:
+            if host_type not in types_dict:
+                result = {'status': False,
+                          'message': f"Unknown type was given: {host_type}"}
+                return result
+        types_list = types
+    else:
+        types_list = types_from_ws_list
+
+    # получение всех хостов из локальной БД
+    query = """
+        SELECT * FROM hosts
+    """
+    hosts_from_local_db = execute_db_query(query)
+    if hosts_from_local_db['status'] == False:
+        result = {'status': False, 'message': "Can't get hosts from local DB"}
+        return result
+    hosts_from_local_db = hosts_from_local_db['result']
+    hosts_from_local_db_dict = {}
+    for host in hosts_from_local_db:
+        hosts_from_local_db_dict[host[1]] = hosts_from_local_db
+
+    import_results = {}
+
+    for host_type in types_list:
+        # получение хостов из WS по типу
+        hosts_from_ws_db = get_hosts_from_ws_db(host_type)
+        if hosts_from_ws_db['status'] == False:
+            import_results[host_type] = {
+                'status': False, 'message': f"Can't get {host_type} from WS DB"}
+            continue
+        hosts_from_ws_db = hosts_from_ws_db['result']
+
+        hosts_to_add = []
+        hosts_to_update = []
+        # сортировка хостов на добавляемые/обновляемые
+        for host in hosts_from_ws_db:
+            print(host[2])
+            if host[2] not in hosts_from_local_db_dict:
+                hosts_to_add.append(
+                    tuple([host[2], host[0], types_dict[host[3]][0]]))
+
+        # query = f"""
+        #             INSERT INTO hosts ('ip', 'shop_pid', 'type_id') VALUES(?, ?, ?);
+        #         """
+
+        # execute_db_query(query, add_shop_list)
+
+
+print(import_hosts(['WAN2']))
 
 # create_db()
 # print(import_host_parameters('data.xlsx'))
