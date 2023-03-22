@@ -11,3 +11,4 @@ sas.py
 test магазины.xlsx
 .gitignore
 ~$test магазины.xlsx
+__pycache__/

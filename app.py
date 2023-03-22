@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_file, url_for, request, flash
-import model
+from models import model
 
 
 app = Flask(__name__)
