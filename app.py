@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_file, url_for, request, flash
-from models import model
+from models import hosts
 
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ def index():
 def report():
     print(request.form['operator'])
     print(request.form['date'])
-    file = model.get_report(
+    file = hosts.get_report(
         int(request.form['operator']), request.form['date'])
     if file:
         return send_file(file, as_attachment=True)

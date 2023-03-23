@@ -113,6 +113,15 @@ def get_shops_from_local_db():
     return result
 
 
+def get_hosts_from_local_db():
+    query = """
+        SELECT hosts.shop_pid, hosts.ip, types.type FROM hosts
+        INNER JOIN types ON hosts.type_id = types.id
+    """
+    result = execute_db_query(query)
+    return result
+
+
 def add_groups_to_local_db(groups_to_add):
     query = f"""
         INSERT INTO groups ('group') VALUES(?);
@@ -141,6 +150,13 @@ def add_shops_to_local_db(shops_to_add):
     execute_db_query(query, shops_to_add)
 
 
+def add_hosts_to_local_db(hosts_to_add):
+    query = f"""
+        INSERT INTO hosts ('ip', 'shop_pid', 'type_id') VALUES(?, ?, ?);
+            """
+    execute_db_query(query, hosts_to_add)
+
+
 def update_types_from_local_db(types_to_update):
     for host_type in types_to_update:
         query = f"""
@@ -164,5 +180,14 @@ def update_shops_from_local_db(shops_to_update):
         query = f"""
             UPDATE shops SET (work_time, off_time) = ('{shop[2]}', '{shop[3]}')
             WHERE pid = '{shop[0]}';
+                """
+        execute_db_query(query)
+
+
+def update_hosts_from_local_db(hosts_to_update):
+    for host in hosts_to_update:
+        query = f"""
+            UPDATE hosts SET (shop_pid, type_id) = ('{host[1]}', '{host[2]}')
+            WHERE ip = '{host[0]}';
                 """
         execute_db_query(query)

@@ -1,5 +1,6 @@
 import pandas as pd
 from db_scripts.local_db import *
+from db_scripts.ws_db import *
 
 
 def import_groups_from_excel(file):
@@ -86,13 +87,34 @@ def import_tags_from_excel(file):
                         [sheet['tags'][i], '']))
                 else:
                     continue
-
     # добавление отсутствующих тегов
     if tags_to_add:
         add_tags_to_local_db(tags_to_add)
-
     # обновление значений измененных тегов
     if tags_to_update:
         update_tags_from_local_db(tags_to_update)
-
     return True
+
+
+def compare_local_and_ws_types():
+    # получение типов из WS
+    types_from_ws = []
+    for host_type in get_types_from_ws_db():
+        types_from_ws.append(host_type[0])
+    # получение типов из локальной БД
+    types_from_local_db = []
+    for host_type in get_types_from_local_db():
+        types_from_local_db.append(host_type[1])
+    # проверка совпадения типов в локальной БД и БД WS
+    types_difference = set(types_from_ws) ^ (set(types_from_local_db))
+    if not types_difference:
+        return True
+    else:
+        raise Exception(f"Unknown types: {', '.join(types_difference)}")
+
+
+# import_groups_from_excel('data.xlsx')
+# import_types_from_excel('data.xlsx')
+# import_tags_from_excel('data.xlsx')
+
+# print(compare_local_and_ws_types())

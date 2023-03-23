@@ -115,4 +115,4 @@ def import_shops():
     return True
 
 
-import_shops()
+# import_shops()
