@@ -28,8 +28,7 @@ def import_types_from_excel(file):
 
     current_types_dict = {}
     for host_type in types_from_local_db:
-        current_types_dict[host_type[1]] = tuple(
-            [host_type[1], host_type[2]])
+        current_types_dict[host_type[1]] = tuple([host_type[1], host_type[2]])
 
     # сортировка типов на добавляемые и изменяемые
     types_to_add = []
@@ -47,7 +46,7 @@ def import_types_from_excel(file):
                     continue
             else:
                 raise Exception(
-                    f'Unknown group in import file: {sheet["type_group"][i]}')
+                    f'Unknown group in import .xlsx file: {sheet["type_group"][i]}')
 
     # добавление отсутствующих типов
     if types_to_add:
@@ -97,6 +96,3 @@ def import_tags_from_excel(file):
         update_tags_from_local_db(tags_to_update)
 
     return True
-
-
-import_tags_from_excel('data.xlsx')

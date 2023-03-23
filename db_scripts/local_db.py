@@ -105,6 +105,14 @@ def get_tags_from_local_db():
     return result
 
 
+def get_shops_from_local_db():
+    query = """
+        SELECT pid, shop, work_time, off_time FROM shops
+            """
+    result = execute_db_query(query)
+    return result
+
+
 def add_groups_to_local_db(groups_to_add):
     query = f"""
         INSERT INTO groups ('group') VALUES(?);
@@ -126,19 +134,35 @@ def add_tags_to_local_db(tags_to_add):
     execute_db_query(query, tags_to_add)
 
 
+def add_shops_to_local_db(shops_to_add):
+    query = f"""
+        INSERT INTO shops ('pid', 'shop', 'work_time', 'off_time') VALUES(?, ?, ?, ?);
+            """
+    execute_db_query(query, shops_to_add)
+
+
 def update_types_from_local_db(types_to_update):
     for host_type in types_to_update:
         query = f"""
-        UPDATE types SET (group_id) = ('{host_type[1]}')
-        WHERE type = '{host_type[0]}';
-            """
+            UPDATE types SET (group_id) = ('{host_type[1]}')
+            WHERE type = '{host_type[0]}';
+                """
         execute_db_query(query)
 
 
 def update_tags_from_local_db(tags_to_update):
     for tag in tags_to_update:
         query = f"""
-        UPDATE tags SET (value) = ('{tag[1]}')
-        WHERE tag = '{tag[0]}';
-            """
+            UPDATE tags SET (value) = ('{tag[1]}')
+            WHERE tag = '{tag[0]}';
+                """
+        execute_db_query(query)
+
+
+def update_shops_from_local_db(shops_to_update):
+    for shop in shops_to_update:
+        query = f"""
+            UPDATE shops SET (work_time, off_time) = ('{shop[2]}', '{shop[3]}')
+            WHERE pid = '{shop[0]}';
+                """
         execute_db_query(query)
