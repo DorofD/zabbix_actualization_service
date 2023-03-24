@@ -2,7 +2,8 @@ from zabbix_operations import *
 import json
 
 
-def get_hosts_from_zabbix(key, groupid=0, tag=0, ip_list=0):
+# !добавить поиск по значению тега
+def get_hosts_from_zabbix(key, groupid=0, tag=0, tag_value=0, ip_list=0):
     request = {
         "jsonrpc": "2.0",
         "method": "host.get",
@@ -12,6 +13,7 @@ def get_hosts_from_zabbix(key, groupid=0, tag=0, ip_list=0):
             },
             "tags": [{
                 "tag": tag,
+
             }],
             "groupids": groupid,
             "selectTags": ["tag", "value"],

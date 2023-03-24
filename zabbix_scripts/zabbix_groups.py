@@ -1,5 +1,4 @@
 from zabbix_operations import *
-import json
 
 
 def get_groups_from_zabbix(key):
@@ -18,3 +17,11 @@ def get_groups_from_zabbix(key):
         raise Exception(
             f"Can't get groups from zabbix: {responce['error']['data']}")
     return responce['result']
+
+
+def add_groups_to_zabbix(key):
+    pass
+
+
+def delete_groups_from_zabbix(key):
+    pass
