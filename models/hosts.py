@@ -1,5 +1,5 @@
 from host_parameters import compare_local_and_ws_types
-from db_scripts.local_db import get_hosts_from_local_db, get_types_from_local_db, add_hosts_to_local_db, update_hosts_from_local_db
+from db_scripts.local_db import get_hosts_from_local_db, get_types_from_local_db, add_hosts_to_local_db, update_hosts_from_local_db, delete_hosts_from_local_db
 from db_scripts.ws_db import get_hosts_from_ws_db
 import logging
 
@@ -47,4 +47,25 @@ def import_hosts():
     return True
 
 
+def delete_missing_hosts():
+    hosts_from_ws_db = get_hosts_from_ws_db()
+    hosts_from_local_db = get_hosts_from_local_db()
+    # получение списков ip адресов из WS и локальной БД
+    ip_from_ws = [hosts_from_ws_db[i][1]
+                  for i in range(len(hosts_from_ws_db))]
+    ip_from_local_db = [hosts_from_local_db[i][1]
+                        for i in range(len(hosts_from_local_db))]
+
+    # поиск отсутствующих в WS адресов из локальной БД
+    ip_to_delete = []
+    for ip in ip_from_local_db:
+        if ip not in ip_from_ws:
+            ip_to_delete.append(ip)
+
+    if ip_to_delete:
+        delete_hosts_from_local_db(ip_to_delete)
+    return True
+
+
 # print(import_hosts())
+# delete_missing_hosts()

@@ -61,32 +61,29 @@ def import_types_from_excel(file):
 
 def import_tags_from_excel(file):
     sheet = pd.read_excel(file)
-    tags_from_local_db = get_tags_from_local_db()
 
-    current_tags_dict = {}
-    for tag in tags_from_local_db:
-        current_tags_dict[tag[0]] = tag
+    # получение словаря тегов (имя/значение) из локальной БД
+    tags = get_tags_from_local_db()
+    tags_from_local_db = {tags[i][0]: tags[i][1] for i in range(len(tags))}
 
-    tags_to_add = []
-    tags_to_update = []
+    # получение словаря тегов (имя/значение) из Excel
+    tags_from_excel = {}
     for i in sheet.index:
         if type(sheet['tags'][i]) == str:
-            if sheet['tags'][i] not in current_tags_dict:
-                if type(sheet['tag_value'][i]) == str:
-                    tags_to_add.append(tuple(
-                        [sheet['tags'][i], sheet['tag_value'][i]]))
-                else:
-                    tags_to_add.append(tuple(
-                        [sheet['tags'][i], '']))
-            elif sheet['tag_value'][i] != current_tags_dict[sheet['tags'][i]][1]:
-                if type(sheet['tag_value'][i]) == str or type(sheet['tag_value'][i]) == int:
-                    tags_to_update.append(tuple(
-                        [sheet['tags'][i], sheet['tag_value'][i]]))
-                elif type(sheet['tag_value'][i]) == float:
-                    tags_to_update.append(tuple(
-                        [sheet['tags'][i], '']))
-                else:
-                    continue
+            if str(sheet['tag_value'][i]) == 'nan':
+                tags_from_excel[sheet['tags'][i]] = ''
+            else:
+                tags_from_excel[sheet['tags'][i]] = str(sheet['tag_value'][i])
+
+    # сортировка тегов на добавляемые и изменяемые
+    tags_to_add = []
+    tags_to_update = []
+    for tag in tags_from_excel:
+        if tag not in tags_from_local_db:
+            tags_to_add.append(tuple([tag, tags_from_excel[tag]]))
+        elif tags_from_local_db[tag] != tags_from_excel[tag]:
+            tags_to_update.append(tuple([tag, tags_from_excel[tag]]))
+
     # добавление отсутствующих тегов
     if tags_to_add:
         add_tags_to_local_db(tags_to_add)

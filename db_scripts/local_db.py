@@ -191,3 +191,12 @@ def update_hosts_from_local_db(hosts_to_update):
             WHERE ip = '{host[0]}';
                 """
         execute_db_query(query)
+
+
+def delete_hosts_from_local_db(ip_to_delete):
+    for ip in ip_to_delete:
+        query = f"""
+            DELETE FROM hosts
+            WHERE ip = '{ip}';
+                """
+        execute_db_query(query)
