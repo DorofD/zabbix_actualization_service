@@ -2,11 +2,14 @@ from zabbix_operations import *
 import json
 
 
-def get_hosts_from_zabbix(key, groupid=0, tag=0):
+def get_hosts_from_zabbix(key, groupid=0, tag=0, ip_list=0):
     request = {
         "jsonrpc": "2.0",
         "method": "host.get",
         "params": {
+            "filter": {
+                "host": ip_list
+            },
             "tags": [{
                 "tag": tag,
             }],
@@ -26,6 +29,8 @@ def get_hosts_from_zabbix(key, groupid=0, tag=0):
         del request["params"]["groupids"]
     if not tag:
         del request["params"]["tags"]
+    if not ip_list:
+        del request["params"]["filter"]
 
     responce = send_request_to_zabbix(request)
     if 'error' in responce:
@@ -39,7 +44,8 @@ def import_hosts_to_zabbix(key, host_list):
              # {"version": "5.2",
              {
                  "version": "5.0",
-                 "hosts": host_list}}
+                 "hosts": host_list}
+             }
 
     json_hosts = json.dumps(hosts)
 
@@ -76,12 +82,43 @@ def import_hosts_to_zabbix(key, host_list):
     return True
 
 
+def delete_hosts_from_zabbix(key, ip_list):
+    hosts = get_hosts_from_zabbix(key=key, ip_list=ip_list)
+    hostid_list = [hosts[i]['hostid'] for i in range(len(hosts))]
+    request = {
+        "jsonrpc": "2.0",
+        "method": "host.delete",
+        "params": hostid_list,
+        "auth": key,
+        "id": 1
+    }
+    responce = send_request_to_zabbix(request)
+    if 'error' in responce:
+        raise Exception(f"Can't delete hosts: {responce['error']['data']}")
+    return True
+
+
+def create_import_host_list():
+    pass
+
+
 hosts = [
     {'host': '172.16.49.1', 'name': 'BIBA', 'tags': [{'tag': 'aboba22282222', 'value': ''}], 'groups': [
         {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
     {'host': '172.16.49.2', 'name': 'BOBA', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [
         {'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip': '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
-
 ]
-key = get_zabbix_auth_key()
-print(import_hosts_to_zabbix(key, hosts))
+# key = get_zabbix_auth_key()
+# print(import_hosts_to_zabbix(key, hosts))
+# kek = get_groups_from_zabbix(key)
+# for i in kek:
+#     print(i)
+
+
+# boba = ['172.16.49.1']
+# print(delete_hosts_from_zabbix(key, boba))
+# 18 - WAN1
+# 19 - WAN2
+# sas = get_hosts_from_zabbix(key, ip_list=boba)  # groupid=[18, 19]
+# bebos = {sas[i]['host']: sas[i]['hostid'] for i in range(len(sas))}
+# print('IP LIST:', bebos)
