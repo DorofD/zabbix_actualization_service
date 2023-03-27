@@ -100,18 +100,32 @@ def delete_hosts_from_zabbix(key, ip_list):
     return True
 
 
-def create_import_host_list():
-    pass
-
-
 hosts = [
-    {'host': '172.16.49.1', 'name': 'BIBA', 'tags': [{'tag': 'aboba22282222', 'value': ''}], 'groups': [
-        {'name': 'Discovered hosts'}], 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'},
-    {'host': '172.16.49.2', 'name': 'BOBA', 'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}], 'groups': [
-        {'name': 'Discovered hosts'}, {'name': 'WAN2'}], 'interfaces': [{'ip': '172.16.49.2', 'interface_ref': 'if1'}], 'inventory_mode': 'DISABLED'}
+    {'host': '172.16.49.1',
+     'name': 'BIBA WAN1',
+     "templates": [
+         {
+             "name": "WAN1 ICMP ping"
+         }
+     ],
+     'tags': [{'tag': 'aboba22282222', 'value': ''}],
+     'groups': [{'name': 'WAN1'}],
+     'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}],
+     'inventory_mode': 'DISABLED'},
+    {'host': '172.16.49.2',
+     'name': 'BOBA WAN2',
+     "templates": [
+         {
+             "name": "WAN2 ICMP ping"
+         }
+     ],
+     'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}],
+     'groups': [{'name': 'WAN2'}],
+     'interfaces': [{'ip': '172.16.49.2', 'interface_ref': 'if1'}],
+     'inventory_mode': 'DISABLED'}
 ]
-# key = get_zabbix_auth_key()
-# print(import_hosts_to_zabbix(key, hosts))
+key = get_zabbix_auth_key()
+print(import_hosts_to_zabbix(key, hosts))
 
 
 # boba = ['172.16.49.1']

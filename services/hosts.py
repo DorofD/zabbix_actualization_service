@@ -67,5 +67,10 @@ def delete_missing_hosts():
     return True
 
 
+def create_import_host_list(type):
+
+    pass
+
+
 # print(import_hosts())
 # delete_missing_hosts()

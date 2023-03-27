@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_file, url_for, request, flash
-from models import hosts
+from services import hosts
 
 
 app = Flask(__name__)

@@ -27,6 +27,15 @@ def create_db():
     execute_db_query(query)
 
     query = """
+    CREATE TABLE IF NOT EXISTS "templates" (
+    "id"	INTEGER,
+    "template"	TEXT UNIQUE,
+    PRIMARY KEY("id" AUTOINCREMENT)
+    );
+    """
+    execute_db_query(query)
+
+    query = """
         CREATE TABLE IF NOT EXISTS "groups" (
         "id"	INTEGER,
         "group"	TEXT UNIQUE,
@@ -40,8 +49,10 @@ def create_db():
         "id"	INTEGER,
         "type"	TEXT UNIQUE,
         "group_id"  INTEGER,
+        "template_id"  INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY("group_id") REFERENCES "groups"("id")
+        FOREIGN KEY("template_id") REFERENCES "templates"("id")
         );
         """
     execute_db_query(query)
@@ -63,9 +74,11 @@ def create_db():
         "ip"	TEXT UNIQUE,
         "shop_pid"	INTEGER,
         "type_id"	INTEGER,
+        "template_id"	INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY("shop_pid") REFERENCES "shops"("pid"),
         FOREIGN KEY("type_id") REFERENCES "types"("id")
+        FOREIGN KEY("template_id") REFERENCES "templates"("id")
         );
     """
     execute_db_query(query)
