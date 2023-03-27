@@ -16,12 +16,58 @@ def get_groups_from_zabbix(key):
     if 'error' in responce:
         raise Exception(
             f"Can't get groups from zabbix: {responce['error']['data']}")
-    return responce['result']
+    # создание словаря в формате "имя группы":"id группы"
+    result = {group['name']: group['groupid'] for group in responce['result']}
+    return result
 
 
-def add_groups_to_zabbix(key):
-    pass
+def add_group_to_zabbix(key, group):
+    request = {
+        "jsonrpc": "2.0",
+        "method": "hostgroup.create",
+        "params": {
+            "name": group
+        },
+        "auth": key,
+        "id": 1
+    }
+
+    responce = send_request_to_zabbix(request)
+    if 'error' in responce:
+        raise Exception(
+            f"Can't create zabbix groups: {responce['error']['data']}")
+    return True
 
 
-def delete_groups_from_zabbix(key):
-    pass
+def delete_groups_from_zabbix(key, groups):
+    existing_groups_dict = get_groups_from_zabbix(key)
+    groupids_to_delete = []
+    for group in groups:
+        if group in existing_groups_dict:
+            groupids_to_delete.append(existing_groups_dict[group])
+    if groupids_to_delete:
+        request = {
+            "jsonrpc": "2.0",
+            "method": "hostgroup.delete",
+            "params": groupids_to_delete,
+            "auth": key,
+            "id": 1
+        }
+        responce = send_request_to_zabbix(request)
+        if 'error' in responce:
+            raise Exception(
+                f"Can't delete group from zabbix: {responce['error']['data']}")
+    return True
+
+
+# key = get_zabbix_auth_key()
+
+# sas = get_groups_from_zabbix(key)
+# for i in sas:
+#     print(i, sas[i])
+
+# group = 'aboba'
+# print(add_group_to_zabbix(key, group))
+
+# groups = ['sas', 'bombas']
+# delete_groups_from_zabbix(key, groups)

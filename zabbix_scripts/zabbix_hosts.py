@@ -112,9 +112,6 @@ hosts = [
 ]
 # key = get_zabbix_auth_key()
 # print(import_hosts_to_zabbix(key, hosts))
-# kek = get_groups_from_zabbix(key)
-# for i in kek:
-#     print(i)
 
 
 # boba = ['172.16.49.1']
