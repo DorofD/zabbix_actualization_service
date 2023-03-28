@@ -117,4 +117,6 @@ def import_shops():
 
 def delete_missing_shops():
     pass
+
+
 # import_shops()

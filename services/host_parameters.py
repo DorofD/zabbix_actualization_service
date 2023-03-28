@@ -1,6 +1,7 @@
 import pandas as pd
 from db_scripts.local_db import *
 from db_scripts.ws_db import *
+from zabbix_scripts.zabbix_templates import *
 
 
 def import_groups_from_excel(file):
@@ -109,6 +110,31 @@ def compare_local_and_ws_types():
     else:
         raise Exception(f"Unknown types: {', '.join(types_difference)}")
 
+
+def update_templates():
+    key = get_zabbix_auth_key()
+    templates_from_zabbix = get_templates_from_zabbix(key)
+    templates_from_local_db = [template[1]
+                               for template in get_templates_from_local_db()]
+    # сортировка шаблонов на добавляемые и удаляемые
+    templates_to_add = []
+    templates_to_delete = []
+    for template in templates_from_zabbix:
+        if template not in templates_from_local_db:
+            templates_to_add.append(tuple([template,]))
+    for template in templates_from_local_db:
+        if template not in templates_from_zabbix:
+            templates_to_delete.append(template)
+    # добавление новых шаблонов
+    if templates_to_add:
+        add_templates_to_local_db(templates_to_add)
+    # удаление отсутствующих шаблонов
+    if templates_to_delete:
+        delete_templates_from_local_db(templates_to_delete)
+    return True
+
+
+update_templates()
 
 # import_groups_from_excel('data.xlsx')
 # import_types_from_excel('data.xlsx')

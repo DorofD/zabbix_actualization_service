@@ -49,10 +49,8 @@ def create_db():
         "id"	INTEGER,
         "type"	TEXT UNIQUE,
         "group_id"  INTEGER,
-        "template_id"  INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY("group_id") REFERENCES "groups"("id")
-        FOREIGN KEY("template_id") REFERENCES "templates"("id")
         );
         """
     execute_db_query(query)
@@ -74,11 +72,9 @@ def create_db():
         "ip"	TEXT UNIQUE,
         "shop_pid"	INTEGER,
         "type_id"	INTEGER,
-        "template_id"	INTEGER,
         PRIMARY KEY("id" AUTOINCREMENT),
         FOREIGN KEY("shop_pid") REFERENCES "shops"("pid"),
         FOREIGN KEY("type_id") REFERENCES "types"("id")
-        FOREIGN KEY("template_id") REFERENCES "templates"("id")
         );
     """
     execute_db_query(query)
@@ -89,6 +85,26 @@ def create_db():
         "tag_id"	INTEGER,
         FOREIGN KEY("host_id") REFERENCES "hosts"("id"),
         FOREIGN KEY("tag_id") REFERENCES "tags"("id")
+        );
+    """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "host_template" (
+        "host_id"	INTEGER,
+        "template_id"	INTEGER,
+        FOREIGN KEY("host_id") REFERENCES "hosts"("id"),
+        FOREIGN KEY("template_id") REFERENCES "templates"("id")
+        );
+    """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "type_template" (
+        "type_id"	INTEGER,
+        "template_id"	INTEGER,
+        FOREIGN KEY("type_id") REFERENCES "types"("id"),
+        FOREIGN KEY("template_id") REFERENCES "templates"("id")
         );
     """
     execute_db_query(query)
@@ -135,6 +151,14 @@ def get_hosts_from_local_db():
     return result
 
 
+def get_templates_from_local_db():
+    query = """
+        SELECT id, template FROM templates
+    """
+    result = execute_db_query(query)
+    return result
+
+
 def add_groups_to_local_db(groups_to_add):
     query = f"""
         INSERT INTO groups ('group') VALUES(?);
@@ -168,6 +192,13 @@ def add_hosts_to_local_db(hosts_to_add):
         INSERT INTO hosts ('ip', 'shop_pid', 'type_id') VALUES(?, ?, ?);
             """
     execute_db_query(query, hosts_to_add)
+
+
+def add_templates_to_local_db(templates_to_add):
+    query = f"""
+        INSERT INTO templates ('template') VALUES(?);
+            """
+    execute_db_query(query, templates_to_add)
 
 
 def update_types_from_local_db(types_to_update):
@@ -213,3 +244,15 @@ def delete_hosts_from_local_db(ip_to_delete):
             WHERE ip = '{ip}';
                 """
         execute_db_query(query)
+
+
+def delete_templates_from_local_db(templates_to_delete):
+    for template in templates_to_delete:
+        query = f"""
+            DELETE FROM templates
+            WHERE template = '{template}';
+                """
+        execute_db_query(query)
+
+
+# create_db()

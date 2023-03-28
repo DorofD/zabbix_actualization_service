@@ -1,4 +1,4 @@
-from zabbix_operations import *
+from zabbix_scripts.zabbix_operations import *
 
 
 def get_templates_from_zabbix(key):
@@ -20,8 +20,8 @@ def get_templates_from_zabbix(key):
     return result
 
 
-key = get_zabbix_auth_key()
+# key = get_zabbix_auth_key()
 
-sas = get_templates_from_zabbix(key)
-for i in sas:
-    print(i)
+# sas = get_templates_from_zabbix(key)
+# for i in sas:
+#     print(i)
