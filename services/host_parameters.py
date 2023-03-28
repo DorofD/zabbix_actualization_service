@@ -134,7 +134,40 @@ def update_templates():
     return True
 
 
-update_templates()
+def set_templates_to_types(file):
+    # ! перед выполнением этой функции необходим импорт хостов,
+    # т.к. в нём проверяется совпадение типов в локальной БД и WS
+
+    # обновление шаблонов
+    update_templates()
+
+    sheet = pd.read_excel(file)
+    # словарь типов в формате type:id
+    types_dict = {host_type[1]: host_type[0]
+                  for host_type in get_types_from_local_db()}
+    # словарь шаблонов в формате template:id
+    templates_dict = {template[1]: template[0]
+                      for template in get_templates_from_local_db()}
+    notes_to_add = []
+    for i in sheet.index:
+        if str(sheet['types'][i]) != 'nan' and sheet['types'][i] in types_dict and str(sheet['type_template'][i]) != 'nan':
+            notes_to_add.append(tuple(
+                [types_dict[sheet['types'][i]], templates_dict[sheet['type_template'][i]]]))
+
+    # проверка уникальности записей
+    existing_notes = get_type_template_notes()
+    for note in notes_to_add:
+        if note in existing_notes:
+            notes_to_add.remove(note)
+    print(notes_to_add)
+    # добавление записей
+    if notes_to_add:
+        add_type_template_notes(notes_to_add)
+    return (True)
+
+
+set_templates_to_types('set_templates.xlsx')
+# update_templates()
 
 # import_groups_from_excel('data.xlsx')
 # import_types_from_excel('data.xlsx')

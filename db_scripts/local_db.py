@@ -159,6 +159,24 @@ def get_templates_from_local_db():
     return result
 
 
+def get_type_template_notes():
+    query = """
+        SELECT * FROM type_template
+    """
+    result = execute_db_query(query)
+    return result
+
+
+def get_type_template_view():
+    query = """
+        SELECT types.type, templates.template FROM type_template
+        INNER JOIN types ON type_template.type_id = types.id
+        INNER JOIN templates ON type_template.template_id = templates.id
+    """
+    result = execute_db_query(query)
+    return result
+
+
 def add_groups_to_local_db(groups_to_add):
     query = f"""
         INSERT INTO groups ('group') VALUES(?);
@@ -199,6 +217,13 @@ def add_templates_to_local_db(templates_to_add):
         INSERT INTO templates ('template') VALUES(?);
             """
     execute_db_query(query, templates_to_add)
+
+
+def add_type_template_notes(notes_to_add):
+    query = f"""
+        INSERT INTO type_template ('type_id', 'template_id') VALUES(?, ?);
+            """
+    execute_db_query(query, notes_to_add)
 
 
 def update_types_from_local_db(types_to_update):
