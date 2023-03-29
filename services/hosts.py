@@ -72,7 +72,7 @@ def create_import_host_list(type_id):
     import_list = []
 
     for i in range(9):
-        print(hosts[i], 'template:', template)
+        print(hosts[i], 'template:', 'sas')
 
 
 # create_import_host_list(5)
