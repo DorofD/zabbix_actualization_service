@@ -67,7 +67,7 @@ def get_shops_from_xls(file):
     return shops
 
 
-def import_shops():
+def update_shops():
     # получение всех магазинов из "Магазинов в цифрах"
     shops_from_xls = get_shops_from_xls(EXPORT_XLS_FILE)
     shops_from_xls_dict = {}

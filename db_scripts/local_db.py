@@ -143,12 +143,30 @@ def get_shops_from_local_db():
 
 
 def get_hosts_from_local_db():
+    # возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер')
     query = """
         SELECT hosts.shop_pid, hosts.ip, types.type FROM hosts
         INNER JOIN types ON hosts.type_id = types.id
     """
     result = execute_db_query(query)
     return result
+
+
+def get_hosts_from_local_db_to_import(type_id):
+    # возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер')
+    query = f"""
+        SELECT hosts.shop_pid, shops.shop, hosts.ip, types.type FROM hosts
+        INNER JOIN types ON hosts.type_id = types.id
+        INNER JOIN shops ON hosts.shop_pid = shops.pid
+        WHERE type_id = '{type_id}'
+    """
+    result = execute_db_query(query)
+    return result
+
+
+# sas = get_hosts_from_local_db_to_import()
+# for i in range(5):
+#     print(sas[i])
 
 
 def get_templates_from_local_db():

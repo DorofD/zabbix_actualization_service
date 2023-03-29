@@ -1,4 +1,4 @@
-from zabbix_operations import *
+from zabbix_scripts.zabbix_operations import *
 import json
 
 
@@ -124,8 +124,8 @@ hosts = [
      'interfaces': [{'ip': '172.16.49.2', 'interface_ref': 'if1'}],
      'inventory_mode': 'DISABLED'}
 ]
-key = get_zabbix_auth_key()
-print(import_hosts_to_zabbix(key, hosts))
+# key = get_zabbix_auth_key()
+# print(import_hosts_to_zabbix(key, hosts))
 
 
 # boba = ['172.16.49.1']

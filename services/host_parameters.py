@@ -112,6 +112,7 @@ def compare_local_and_ws_types():
 
 
 def update_templates():
+    # обновление шаблонов в локальной БД на основе шаблонов zabbix
     key = get_zabbix_auth_key()
     templates_from_zabbix = get_templates_from_zabbix(key)
     templates_from_local_db = [template[1]
@@ -154,20 +155,23 @@ def set_templates_to_types(file):
             notes_to_add.append(tuple(
                 [types_dict[sheet['types'][i]], templates_dict[sheet['type_template'][i]]]))
 
-    # проверка уникальности записей
+    # проверка уникальности записей и удаление дубликатов
     existing_notes = get_type_template_notes()
+    not_unique = []
     for note in notes_to_add:
         if note in existing_notes:
-            notes_to_add.remove(note)
-    print(notes_to_add)
+            not_unique.append(note)
+    for note in not_unique:
+        notes_to_add.remove(note)
     # добавление записей
     if notes_to_add:
         add_type_template_notes(notes_to_add)
     return (True)
 
 
-set_templates_to_types('set_templates.xlsx')
+# set_templates_to_types('set_templates.xlsx')
 # update_templates()
+# print(get_type_template_view())
 
 # import_groups_from_excel('data.xlsx')
 # import_types_from_excel('data.xlsx')

@@ -1,5 +1,5 @@
 from host_parameters import compare_local_and_ws_types
-from db_scripts.local_db import get_hosts_from_local_db, get_types_from_local_db, add_hosts_to_local_db, update_hosts_from_local_db, delete_hosts_from_local_db
+from db_scripts.local_db import get_hosts_from_local_db, get_types_from_local_db, add_hosts_to_local_db, update_hosts_from_local_db, delete_hosts_from_local_db, get_hosts_from_local_db_to_import
 from db_scripts.ws_db import get_hosts_from_ws_db
 import logging
 
@@ -67,10 +67,26 @@ def delete_missing_hosts():
     return True
 
 
-def create_import_host_list(type):
+def create_import_host_list(type_id):
+    hosts = get_hosts_from_local_db_to_import(type_id)
+    import_list = []
 
-    pass
+    for i in range(9):
+        print(hosts[i], 'template:', template)
 
+
+# create_import_host_list(5)
+{'host': '172.16.49.1',
+ 'name': 'BIBA WAN1',
+ "templates": [
+         {
+             "name": "WAN1 ICMP ping"
+         }
+ ],
+ 'tags': [{'tag': 'aboba22282222', 'value': ''}],
+ 'groups': [{'name': 'WAN1'}],
+ 'interfaces': [{'ip': '172.16.49.1', 'interface_ref': 'if1'}],
+ 'inventory_mode': 'DISABLED'},
 
 # print(import_hosts())
 # delete_missing_hosts()
