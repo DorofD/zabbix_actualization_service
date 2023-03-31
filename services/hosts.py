@@ -1,5 +1,7 @@
 from services.host_parameters import compare_local_and_ws_types
-from db_scripts.local_db import get_hosts_from_local_db, get_types_from_local_db, add_hosts_to_local_db, update_hosts_from_local_db, delete_hosts_from_local_db, get_hosts_from_local_db_to_import
+from db_scripts.local_db import *
+from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
+from zabbix_scripts.zabbix_groups import get_groups_from_zabbix, add_group_to_zabbix
 from db_scripts.ws_db import get_hosts_from_ws_db
 import logging
 
@@ -67,5 +69,65 @@ def delete_missing_hosts():
     return True
 
 
+def create_import_list(type_id):
+    hosts = get_hosts_from_local_db_to_import(type_id)
+
+    # словарь типов и шаблонов в формате type:template
+    type_template_dict = {note[0]: note[1]
+                          for note in get_type_template_view()}
+    # словарь магазинов в формате pid:[work_time, off_time]
+    shops_dict = {shop[0]: [shop[2], shop[3]]
+                  for shop in get_shops_from_local_db()}
+
+    # шаблон в zabbix, присоединяемый к хосту
+    # ! дописать присвоение нескольких шаблонов
+    try:
+        zabbix_template = type_template_dict[hosts[0][3]]
+    except:
+        raise Exception(f'No hosts with typeid{type_id}')
+
+    key = get_zabbix_auth_key()
+    # группы из zabbix
+    groups_from_zabbix_dict = get_groups_from_zabbix(key)
+
+    import_list = []
+
+    for host in hosts:
+        template_for_import_list = {
+            'host': 'ip_address',
+            'name': 'host_visible_name',
+            'templates': [{"name": "template_name"}],
+            # 'tags': [{'tag': 'aboba22282222', 'value': ''}],
+            'groups': [{'name': 'group_name'}],
+            'interfaces': [{'ip': 'ip_address', 'interface_ref': 'if1'}],
+            'inventory_mode': 'DISABLED'}
+
+        # уникальное имя хоста
+        template_for_import_list['host'] = host[2]
+
+        # отображаемое имя хоста
+        template_for_import_list['name'] = f'{host[0]} {host[1]} {host[3]} ({host[2]})'
+
+        # шаблон в zabbix, присоединяемый к хосту
+        # ! дописать присвоение нескольких шаблонов
+        template_for_import_list['templates'][0]['name'] = zabbix_template
+
+        # группы в zabbix, присоединяемые к хосту
+        work_time_group = f'WT {shops_dict[host[0]][0]}'
+        if work_time_group not in groups_from_zabbix_dict:
+            add_group_to_zabbix(key=key, group_name=work_time_group)
+            groups_from_zabbix_dict = get_groups_from_zabbix(key)
+        type_group = host[3]
+        if type_group not in groups_from_zabbix_dict:
+            add_group_to_zabbix(key=key, group_name=type_group)
+            groups_from_zabbix_dict = get_groups_from_zabbix(key)
+        template_for_import_list['groups'] = [
+            {'name': work_time_group}, {'name': type_group}]
+        # интерфейс хоста
+        template_for_import_list['interfaces'][0]['ip'] = host[2]
+
+        import_list.append(template_for_import_list)
+
+    return import_list
 # print(import_hosts())
 # delete_missing_hosts()
