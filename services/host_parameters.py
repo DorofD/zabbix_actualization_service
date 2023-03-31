@@ -171,7 +171,7 @@ def set_templates_to_types(file):
 
 # set_templates_to_types('set_templates.xlsx')
 # update_templates()
-print(get_type_template_view())
+# print(get_type_template_view())
 
 # import_groups_from_excel('data.xlsx')
 # import_types_from_excel('data.xlsx')

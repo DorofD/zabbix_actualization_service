@@ -62,7 +62,7 @@ def import_hosts_to_zabbix(key, host_list):
                 "discoveryRules": {"createMissing": True, "updateExisting": True},
                 "graphs": {"createMissing": True, "updateExisting": True},
                 "groups": {"createMissing": True},
-                "hosts": {"createMissing": True, "updateExisting": True},
+                "hosts": {"createMissing": True, "updateExisting": False},
                 "images": {"createMissing": True, "updateExisting": True},
                 "items": {"createMissing": True, "updateExisting": True},
                 "maps": {"createMissing": True, "updateExisting": True},
@@ -122,6 +122,16 @@ hosts = [
      'tags': [{'tag': 'aboba2228', 'value': ''}, {'tag': 'zalupa', 'value': '1488'}],
      'groups': [{'name': 'WAN2'}],
      'interfaces': [{'ip': '172.16.49.2', 'interface_ref': 'if1'}],
+     'inventory_mode': 'DISABLED'},
+    {'host': '1.1.1.1',
+     'name': 'sasomba',
+     "templates": [
+         {
+             "name": "WAN2 ICMP ping"
+         }
+     ],
+     'groups': [{'name': 'ZALUPA'}, {'name': 'WAN2'}],
+     'interfaces': [{'ip': '1.1.1.1', 'interface_ref': 'if1'}],
      'inventory_mode': 'DISABLED'}
 ]
 # key = get_zabbix_auth_key()

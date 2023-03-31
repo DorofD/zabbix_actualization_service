@@ -1,5 +1,6 @@
-from zabbix_operations import *
-from zabbix_groups import get_groups_from_zabbix
+from zabbix_scripts.zabbix_operations import *
+from zabbix_scripts.zabbix_groups import get_groups_from_zabbix
+import pandas as pd
 
 
 def get_maintenance_from_zabbix(key):
@@ -64,8 +65,40 @@ def add_maintenance_to_zabbix(key, maintenance):
     return True
 
 
-# key = get_zabbix_auth_key()
+def update_zabbix_maintenance(key):
+    # словарь существующих групп в формате name:id
+    groups_dict = get_groups_from_zabbix(key)
+    # словарь существующих обслуживаний в формате name:id
+    existing_maintenance_dict = {maintenance['name']: maintenance['maintenanceid']
+                                 for maintenance in get_maintenance_from_zabbix(key)}
+    for group in groups_dict:
+        if 'WT' in group and group not in existing_maintenance_dict:
+            # шаблон добавления обслуживания
+            maintenance_template = {'name': 'name',
+                                    'start_time': '50400',
+                                    'period': '43200',
+                                    'group_names': ['name1', 'name2']}
+            pass
+            start_time, end_time = group.replace('WT ', '').split('-')
+            # время начала работы в секундах
+            start_time = int(pd.to_datetime(start_time, format='%H:%M').minute) * \
+                60 + int(pd.to_datetime(start_time,
+                         format='%H:%M').hour) * 60 * 60
+            # время конца работы в секундах
+            end_time = int(pd.to_datetime(end_time, format='%H:%M').minute) * \
+                60 + int(pd.to_datetime(end_time, format='%H:%M').hour) * 60 * 60
+            off_time = 86400 - (end_time - start_time)
+            maintenance_template['name'] = f'{group} {int(off_time/3600)}'
+            maintenance_template['start_time'] = start_time
+            maintenance_template['period'] = off_time
+            maintenance_template['group_names'] = [group]
+            add_maintenance_to_zabbix(
+                key=key, maintenance=maintenance_template)
+    return True
 
+
+# key = get_zabbix_auth_key()
+# update_zabbix_maintenance(key)
 # maintenance = {'name': 'zalupa1488',
 #                'start_time': '50400',
 #                'period': '43200',

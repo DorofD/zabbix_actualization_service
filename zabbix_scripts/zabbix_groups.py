@@ -1,4 +1,4 @@
-from zabbix_operations import *
+from zabbix_scripts.zabbix_operations import *
 
 
 def get_groups_from_zabbix(key):
@@ -16,17 +16,17 @@ def get_groups_from_zabbix(key):
     if 'error' in responce:
         raise Exception(
             f"Can't get groups from zabbix: {responce['error']['data']}")
-    # создание словаря в формате "имя группы":"id группы"
+    # создание словаря в формате name:id
     result = {group['name']: group['groupid'] for group in responce['result']}
     return result
 
 
-def add_group_to_zabbix(key, group):
+def add_group_to_zabbix(key, group_name):
     request = {
         "jsonrpc": "2.0",
         "method": "hostgroup.create",
         "params": {
-            "name": group
+            "name": group_name
         },
         "auth": key,
         "id": 1
@@ -66,7 +66,7 @@ def delete_groups_from_zabbix(key, groups):
 # for i in sas:
 #     print(i, sas[i])
 
-# group = 'aboba'
+# group = 'ZALUPA'
 # print(add_group_to_zabbix(key, group))
 
 # groups = ['sas', 'bombas']
