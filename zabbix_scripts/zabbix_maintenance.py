@@ -80,6 +80,7 @@ def update_zabbix_maintenance(key):
                                     'group_names': ['name1', 'name2']}
             pass
             start_time, end_time = group.replace('WT ', '').split('-')
+            end_time = end_time[0:5]
             # время начала работы в секундах
             start_time = int(pd.to_datetime(start_time, format='%H:%M').minute) * \
                 60 + int(pd.to_datetime(start_time,
@@ -88,8 +89,8 @@ def update_zabbix_maintenance(key):
             end_time = int(pd.to_datetime(end_time, format='%H:%M').minute) * \
                 60 + int(pd.to_datetime(end_time, format='%H:%M').hour) * 60 * 60
             off_time = 86400 - (end_time - start_time)
-            maintenance_template['name'] = f'{group} {int(off_time/3600)}'
-            maintenance_template['start_time'] = start_time
+            maintenance_template['name'] = f'{group}'
+            maintenance_template['start_time'] = end_time
             maintenance_template['period'] = off_time
             maintenance_template['group_names'] = [group]
             add_maintenance_to_zabbix(

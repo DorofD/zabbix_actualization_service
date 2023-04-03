@@ -3,11 +3,6 @@ from db_scripts.local_db import *
 from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
 from zabbix_scripts.zabbix_groups import get_groups_from_zabbix, add_group_to_zabbix
 from db_scripts.ws_db import get_hosts_from_ws_db
-import logging
-
-
-logging.basicConfig(level=logging.INFO,
-                    filename="log.txt", filemode="w", format=f'%(asctime)s %(levelname)s: %(message)s')
 
 
 def import_hosts():
@@ -113,7 +108,7 @@ def create_import_list(type_id):
         template_for_import_list['templates'][0]['name'] = zabbix_template
 
         # группы в zabbix, присоединяемые к хосту
-        work_time_group = f'WT {shops_dict[host[0]][0]}'
+        work_time_group = f'WT {shops_dict[host[0]][0]} {shops_dict[host[0]][1]}'
         if work_time_group not in groups_from_zabbix_dict:
             add_group_to_zabbix(key=key, group_name=work_time_group)
             groups_from_zabbix_dict = get_groups_from_zabbix(key)
@@ -129,5 +124,8 @@ def create_import_list(type_id):
         import_list.append(template_for_import_list)
 
     return import_list
+
+
+# create_import_list(6)
 # print(import_hosts())
 # delete_missing_hosts()
