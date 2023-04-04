@@ -76,18 +76,17 @@ def update_shops():
 
     # получение списка PIDов из WS
     shops_from_ws = get_shops_from_ws_db()
-    pid_list = []
-    for shop in shops_from_ws:
-        pid_list.append(shop[0])
+    pids_from_ws = [shop[0] for shop in shops_from_ws]
 
     # создание словаря из магазинов в WS
     actual_shop_dict = {}
-    for pid in pid_list:
+    for pid in pids_from_ws:
         if pid in shops_from_xls_dict:
             actual_shop_dict[pid] = shops_from_xls_dict[pid]
         else:
             # PID есть в WS, но нет в "Магазинах в цифрах"
-            print('Shop not in xls:', pid)
+            raise Exception(
+                f'Shop is missing in WS, but present in XLS file, PID: {pid}')
 
     # создание словаря магазинов из локальной БД
     shops_from_local_db = get_shops_from_local_db()
@@ -104,6 +103,13 @@ def update_shops():
         elif actual_shop_dict[pid] not in shops_from_local_db:
             shops_to_update.append(actual_shop_dict[pid])
 
+    # создание списка PIDов неактуальных магазинов
+    pids_to_delete = []
+    pids_from_local_db = [shop[0] for shop in get_shops_from_local_db()]
+    for pid in pids_from_local_db:
+        if pid not in pids_from_ws:
+            pids_to_delete.append(pid)
+
     # добавление отсутствующих магазинов
     if shops_to_add:
         add_shops_to_local_db(shops_to_add)
@@ -112,8 +118,8 @@ def update_shops():
     if shops_to_update:
         update_shops_from_local_db(shops_to_update)
 
+    # удаление отсутствующих магазинов
+    if pids_to_delete:
+        delete_shops_from_local_db(pids_to_delete)
+
     return True
-
-
-def delete_missing_shops():
-    pass

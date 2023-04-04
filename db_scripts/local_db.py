@@ -281,6 +281,21 @@ def update_hosts_from_local_db(hosts_to_update):
         execute_db_query(query)
 
 
+def delete_shops_from_local_db(pids_to_delete):
+    for pid in pids_to_delete:
+        query = f"""
+            DELETE FROM hosts
+            WHERE shop_pid = '{pid}';
+                """
+        execute_db_query(query)
+
+        query = f"""
+            DELETE FROM shops
+            WHERE pid = '{pid}';
+                """
+        execute_db_query(query)
+
+
 def delete_hosts_from_local_db(ip_to_delete):
     for ip in ip_to_delete:
         query = f"""

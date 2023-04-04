@@ -14,6 +14,7 @@ DB_DRIVER = os.environ['DB_DRIVER']
 
 
 def get_hosts_from_ws_db():
+    # возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер')
     conn = pyodbc.connect(
         f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
     cursor = conn.cursor()
@@ -31,6 +32,7 @@ def get_hosts_from_ws_db():
 
 
 def get_shops_from_ws_db():
+    # возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)')
     conn = pyodbc.connect(
         f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
     cursor = conn.cursor()
@@ -41,6 +43,7 @@ def get_shops_from_ws_db():
 
 
 def get_types_from_ws_db():
+    # возвращает список кортедей в формате ('WAN остров', )
     conn = pyodbc.connect(
         f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
     cursor = conn.cursor()

@@ -12,16 +12,20 @@ logging.basicConfig(level=logging.INFO,
 
 
 def update_local_data(file):
-    create_db()
-    update_shops()
-    import_groups_from_excel(file)
-    import_types_from_excel(file)
-    import_tags_from_excel(file)
-    set_templates_to_types(file)
-    import_hosts()
-    delete_missing_hosts()
-    logging.info('Local data update success')
-    return True
+    try:
+        create_db()
+        update_shops()
+        import_groups_from_excel(file)
+        import_types_from_excel(file)
+        import_tags_from_excel(file)
+        set_templates_to_types(file)
+        import_hosts()
+        delete_missing_hosts()
+        logging.info('Local data update success')
+        return True
+    except Exception as exc:
+        logging.error(f'Local data update fail: {exc}')
+        raise Exception(exc)
 
 
 def update_zabbix_data():
@@ -43,6 +47,17 @@ def update_zabbix_data():
 
         # обновление периодов и групп обслуживания
         update_zabbix_maintenance(key)
+
+        # удаление неактуальных хостов из Zabbix
+        ip_to_delete = []
+        ip_list_from_ws = [shop[1] for shop in get_hosts_from_ws_db()]
+        ip_list_from_zabbix = [host['host']
+                               for host in get_hosts_from_zabbix(key)]
+        for ip in ip_list_from_zabbix:
+            if ip not in ip_list_from_ws:
+                ip_to_delete.append(ip)
+        delete_hosts_from_zabbix(key=key, ip_list=ip_to_delete)
+
         logging.info('Zabbix data update success')
         return True
     except Exception as exc:
