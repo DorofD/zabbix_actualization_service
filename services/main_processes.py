@@ -17,7 +17,6 @@ def update_local_data(file):
         update_shops()
         import_groups_from_excel(file)
         import_types_from_excel(file)
-        import_tags_from_excel(file)
         set_templates_to_types(file)
         import_hosts()
         delete_missing_hosts()

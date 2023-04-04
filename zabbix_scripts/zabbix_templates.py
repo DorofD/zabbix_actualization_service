@@ -18,10 +18,3 @@ def get_templates_from_zabbix(key):
     # создание списка имен шаблонов
     result = [template['name'] for template in responce['result']]
     return result
-
-
-# key = get_zabbix_auth_key()
-
-# sas = get_templates_from_zabbix(key)
-# for i in sas:
-#     print(i)
