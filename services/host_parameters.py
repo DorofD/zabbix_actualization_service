@@ -169,6 +169,42 @@ def set_templates_to_types(file):
     return (True)
 
 
+def set_templates_to_hosts(file):
+    # ! перед выполнением этой функции необходим импорт хостов и обновление шаблонов
+
+    sheet = pd.read_excel(file)
+    # словарь шаблонов в формате template:id
+    templates_dict = {template[1]: template[0]
+                      for template in get_templates_from_local_db()}
+    # словарь хостов в формате ip:id
+    hosts_dict = {host[1]: host[3] for host in get_hosts_from_local_db()}
+    # список записей из импортируемого файла
+    notes_list_from_xlsx = []
+    for i in sheet.index:
+        if str(sheet['hosts'][i]) != 'nan' and str(sheet['host_template'][i]) != 'nan':
+            notes_list_from_xlsx.append(
+                [sheet['hosts'][i], sheet['host_template'][i]])
+
+    notes_to_add = []
+    for note in notes_list_from_xlsx:
+        if note[0] not in hosts_dict:
+            raise Exception(
+                f"Can't set templates to hosts: unknown host ({note[0]}) in imported file")
+        if note[1] not in templates_dict:
+            raise Exception(
+                f"Can't set templates to hosts: unknown template ({note[1]}) in imported file")
+        notes_to_add.append(
+            tuple([hosts_dict[note[0]], templates_dict[note[1]]]))
+
+    # удаление всех записей из таблицы
+    delete_host_template_notes_from_local_db()
+    # добавление записей
+    if notes_to_add:
+        add_host_template_notes(notes_to_add)
+    return True
+
+
+# set_templates_to_hosts('data.xlsx')
 # set_templates_to_types('set_templates.xlsx')
 # update_templates()
 # print(get_type_template_view())

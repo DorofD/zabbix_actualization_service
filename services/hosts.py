@@ -47,39 +47,36 @@ def import_hosts():
 def delete_missing_hosts():
     hosts_from_ws_db = get_hosts_from_ws_db()
     hosts_from_local_db = get_hosts_from_local_db()
-    # получение списков ip адресов из WS и локальной БД
+    # список ip адресов из WS
     ip_from_ws = [hosts_from_ws_db[i][1]
                   for i in range(len(hosts_from_ws_db))]
-    ip_from_local_db = [hosts_from_local_db[i][1]
-                        for i in range(len(hosts_from_local_db))]
-
+    # словарь адресов в формате ip:id из локальной БД
+    ip_from_local_db_dict = {hosts_from_local_db[i][1]: hosts_from_local_db[i][3]
+                             for i in range(len(hosts_from_local_db))}
+    # список для удаления связей из host_template
+    id_to_delete = []
     # поиск отсутствующих в WS адресов из локальной БД
     ip_to_delete = []
-    for ip in ip_from_local_db:
+    for ip in ip_from_local_db_dict:
         if ip not in ip_from_ws:
             ip_to_delete.append(ip)
-
+            id_to_delete.append(ip_from_local_db_dict[ip])
+    # удаление хостов
     if ip_to_delete:
+        delete_host_template_notes_from_local_db(id_to_delete)
         delete_hosts_from_local_db(ip_to_delete)
     return True
 
 
 def create_import_list(type_id):
     hosts = get_hosts_from_local_db_to_import(type_id)
-
-    # словарь типов и шаблонов в формате type:template
-    type_template_dict = {note[0]: note[1]
-                          for note in get_type_template_view()}
+    # список шаблонов для выбранного типа хостов
+    type_templates_list = [note[1] for note in get_type_template_view(type_id)]
     # словарь магазинов в формате pid:[work_time, off_time]
     shops_dict = {shop[0]: [shop[2], shop[3]]
                   for shop in get_shops_from_local_db()}
-
-    # шаблон в zabbix, присоединяемый к хосту
-    # ! дописать присвоение нескольких шаблонов
-    try:
-        zabbix_template = type_template_dict[hosts[0][3]]
-    except:
-        raise Exception(f'No hosts with typeid{type_id}')
+    # список ip адресов хостов с присоединенными шаблонами
+    host_templates_ip_list = [host[0] for host in get_host_template_view()]
 
     key = get_zabbix_auth_key()
     # группы из zabbix
@@ -91,7 +88,8 @@ def create_import_list(type_id):
         template_for_import_list = {
             'host': 'ip_address',
             'name': 'host_visible_name',
-            'templates': [{"name": "template_name"}],
+            # 'templates' содержит список словарей в формате {"name": "template_name"}
+            'templates': [],
             # 'tags': [{'tag': 'aboba22282222', 'value': ''}],
             'groups': [{'name': 'group_name'}],
             'interfaces': [{'ip': 'ip_address', 'interface_ref': 'if1'}],
@@ -103,11 +101,24 @@ def create_import_list(type_id):
         # отображаемое имя хоста
         template_for_import_list['name'] = f'{host[0]} {host[1]} {host[3]} ({host[2]})'
 
-        # шаблон в zabbix, присоединяемый к хосту
-        # ! дописать присвоение нескольких шаблонов
-        template_for_import_list['templates'][0]['name'] = zabbix_template
+        # шаблоны в zabbix, присоединяемые к хосту
+        templates = []
+        # шаблоны для типов
+        for template in type_templates_list:
+            templates.append(template)
+        # шаблоны для конкретного хоста
+        host_templates = []
+        if host[2] in host_templates_ip_list:
+            host_templates = [host[1]
+                              for host in get_host_template_view(host[4])]
+        if host_templates:
+            for template in host_templates:
+                templates.append(template)
+        # присвоение хосту шаблонов
+        for template in templates:
+            template_for_import_list['templates'].append({"name": template})
 
-        # группы в zabbix, присоединяемые к хосту
+        # группы в zabbix, присоединяемые к хосту (группа типа и группа work_time)
         work_time_group = f'WT {shops_dict[host[0]][0]} {shops_dict[host[0]][1]}'
         if work_time_group not in groups_from_zabbix_dict:
             add_group_to_zabbix(key=key, group_name=work_time_group)

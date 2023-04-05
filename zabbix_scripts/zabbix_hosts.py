@@ -101,13 +101,8 @@ def delete_hosts_from_zabbix(key, ip_list):
     return True
 
 
-def delete_all_hosts_from_zabbix(key):
-    ip_list = [host[1] for host in get_hosts_from_local_db()]
-    delete_hosts_from_zabbix(key, ip_list)
-    return True
-
-
 # key = get_zabbix_auth_key()
+# delete_hosts_from_zabbix(key, [])
 # print(import_hosts_to_zabbix(key, hosts))
 
 

@@ -44,7 +44,7 @@ def update_zabbix_data():
                 import_hosts_to_zabbix(key=key, host_list=import_list)
                 print('end import', host_type)
 
-        # обновление периодов и групп обслуживания
+        # обновление обслуживания
         update_zabbix_maintenance(key)
 
         # удаление неактуальных хостов из Zabbix
@@ -55,7 +55,8 @@ def update_zabbix_data():
         for ip in ip_list_from_zabbix:
             if ip not in ip_list_from_ws:
                 ip_to_delete.append(ip)
-        delete_hosts_from_zabbix(key=key, ip_list=ip_to_delete)
+        if ip_to_delete:
+            delete_hosts_from_zabbix(key=key, ip_list=ip_to_delete)
 
         logging.info('Zabbix data update success')
         return True

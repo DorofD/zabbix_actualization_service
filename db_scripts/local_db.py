@@ -149,9 +149,9 @@ def get_shops_from_local_db(pid=0):
 
 
 def get_hosts_from_local_db():
-    # возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер')
+    # возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер', 1)
     query = """
-        SELECT hosts.shop_pid, hosts.ip, types.type FROM hosts
+        SELECT hosts.shop_pid, hosts.ip, types.type, hosts.id FROM hosts
         INNER JOIN types ON hosts.type_id = types.id
     """
     result = execute_db_query(query)
@@ -159,9 +159,9 @@ def get_hosts_from_local_db():
 
 
 def get_hosts_from_local_db_to_import(type_id):
-    # возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)', '172.16.47.193', 'Роутер')
+    # возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)', '172.16.47.193', 'Роутер', 1)
     query = f"""
-        SELECT hosts.shop_pid, shops.shop, hosts.ip, types.type FROM hosts
+        SELECT hosts.shop_pid, shops.shop, hosts.ip, types.type, hosts.id FROM hosts
         INNER JOIN types ON hosts.type_id = types.id
         INNER JOIN shops ON hosts.shop_pid = shops.pid
         WHERE type_id = '{type_id}'
@@ -186,13 +186,42 @@ def get_type_template_notes():
     return result
 
 
-def get_type_template_view():
-    query = """
-        SELECT types.type, templates.template FROM type_template
-        INNER JOIN types ON type_template.type_id = types.id
-        INNER JOIN templates ON type_template.template_id = templates.id
-    """
-    result = execute_db_query(query)
+def get_type_template_view(type_id=0):
+    if not type_id:
+        query = """
+            SELECT types.type, templates.template FROM type_template
+            INNER JOIN types ON type_template.type_id = types.id
+            INNER JOIN templates ON type_template.template_id = templates.id
+        """
+        result = execute_db_query(query)
+    else:
+        query = f"""
+            SELECT types.type, templates.template FROM type_template
+            INNER JOIN types ON type_template.type_id = types.id
+            INNER JOIN templates ON type_template.template_id = templates.id
+            WHERE type_id = '{type_id}'
+        """
+        result = execute_db_query(query)
+    return result
+
+
+def get_host_template_view(host_id=0):
+    # возвращает список кортежей в формате ('172.16.47.195', 'test template')
+    if not host_id:
+        query = """
+            SELECT hosts.ip, templates.template FROM host_template
+            INNER JOIN hosts ON host_template.host_id = hosts.id
+            INNER JOIN templates ON host_template.template_id = templates.id
+        """
+        result = execute_db_query(query)
+    else:
+        query = f"""
+            SELECT hosts.ip, templates.template FROM host_template
+            INNER JOIN hosts ON host_template.host_id = hosts.id
+            INNER JOIN templates ON host_template.template_id = templates.id
+            WHERE host_id = '{host_id}'
+        """
+        result = execute_db_query(query)
     return result
 
 
@@ -241,6 +270,13 @@ def add_templates_to_local_db(templates_to_add):
 def add_type_template_notes(notes_to_add):
     query = f"""
         INSERT INTO type_template ('type_id', 'template_id') VALUES(?, ?);
+            """
+    execute_db_query(query, notes_to_add)
+
+
+def add_host_template_notes(notes_to_add):
+    query = f"""
+        INSERT INTO host_template ('host_id', 'template_id') VALUES(?, ?);
             """
     execute_db_query(query, notes_to_add)
 
@@ -313,5 +349,19 @@ def delete_templates_from_local_db(templates_to_delete):
                 """
         execute_db_query(query)
 
+
+def delete_host_template_notes_from_local_db(host_id_list=0):
+    if not host_id_list:
+        query = f"""
+            DELETE FROM host_template
+                """
+        execute_db_query(query)
+    else:
+        for id in host_id_list:
+            query = f"""
+                DELETE FROM host_template
+                WHERE host_id = '{id}';
+                    """
+            execute_db_query(query)
 
 # create_db()
