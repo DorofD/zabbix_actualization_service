@@ -12,19 +12,23 @@
     />
     <meta charset="UTF-8" />
 
-    <title>count_report</title>
+    <title>Zabbix Actualization Service</title>
   </head>
   <body>
     <header>
       <nav>
         <ul class="mainmenu">
           <li>
-            <a class="{{class1}}" href="{{ url_for('index')}}">Отчёты</a>
+            <a class="{{class1}}" href="{{ url_for('index')}}">Главная</a>
           </li>
           <li>
-            <a class="{{class2}}" href="{{ url_for('clever_cam')}}"
-              >CleverCam</a
-            >
+            <a class="{{class2}}" href="{{ url_for('index')}}">Управление</a>
+          </li>
+          <li>
+            <a class="{{class3}}" href="{{ url_for('index')}}">Выгрузка WS</a>
+          </li>
+          <li>
+            <a class="{{class4}}" href="{{ url_for('index')}}">О приложении</a>
           </li>
         </ul>
       </nav>

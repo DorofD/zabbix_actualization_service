@@ -1,6 +1,7 @@
 from services.host_parameters import *
 from services.shops import *
 from services.hosts import *
+from services.notifications import *
 from zabbix_scripts.zabbix_hosts import *
 from zabbix_scripts.zabbix_groups import *
 from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
@@ -65,5 +66,12 @@ def update_zabbix_data():
         raise Exception(exc)
 
 
-update_local_data('data.xlsx')
-update_zabbix_data()
+def execute_main_operations():
+    try:
+        update_local_data('data.xlsx')
+        update_zabbix_data()
+    except Exception as exc:
+        send_email(str(exc))
+
+
+execute_main_operations()

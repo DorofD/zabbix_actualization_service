@@ -46,7 +46,7 @@ li.user {
 }
 
 li a.active {
-  background-color: #4caf50;
+  background-color: #d60000;
   color: white;
 }
 
@@ -54,20 +54,6 @@ li a:hover:not(.active) {
   background-color: #555;
   color: white;
 }
-
-/* td a.intable {
-  float: left;
-  display: block;
-  color: #000;
-  padding: 8px 16px;
-  text-decoration: none;
-  height: 34px;
-} */
-
-/* td a:hover:not(.active) {
-  background-color: #555;
-  color: white;
-} */
 
 .btn {
   font-size: large;
@@ -111,7 +97,7 @@ input.shop {
 
 table {
   width: 40%;
-  background: #4caf50;
+  background: #d60000;
   border-spacing: 0 2px;
 }
 
@@ -161,18 +147,18 @@ form.login {
   background-color: #f5f5f5;
   width: 320px;
   border: 2px solid;
-  border-color: #4caf50;
+  border-color: #d60000;
   border-radius: 10px;
   margin: 0 auto;
 }
 input[type="text"] {
-  border: 2px solid #4caf50;
+  border: 2px solid #d60000;
   border-radius: 4px;
   font-size: medium;
 }
 
 input[type="password"] {
-  border: 2px solid #4caf50;
+  border: 2px solid #d60000;
   border-radius: 4px;
   font-size: medium;
 }

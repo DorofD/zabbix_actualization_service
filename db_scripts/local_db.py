@@ -109,6 +109,16 @@ def create_db():
     """
     execute_db_query(query)
 
+    query = """
+        CREATE TABLE IF NOT EXISTS "recipients" (
+        "id"	INTEGER,
+        "recipient"	TEXT UNIQUE,
+        "type"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
 
 def get_groups_from_local_db():
     query = """
@@ -220,6 +230,21 @@ def get_host_template_view(host_id=0):
             INNER JOIN hosts ON host_template.host_id = hosts.id
             INNER JOIN templates ON host_template.template_id = templates.id
             WHERE host_id = '{host_id}'
+        """
+        result = execute_db_query(query)
+    return result
+
+
+def get_recipients(recipient_type=0):
+    if not recipient_type:
+        query = """
+            SELECT * FROM recipients
+        """
+        result = execute_db_query(query)
+    else:
+        query = f"""
+            SELECT * FROM recipients
+            WHERE type = '{recipient_type}'
         """
         result = execute_db_query(query)
     return result
@@ -363,5 +388,3 @@ def delete_host_template_notes_from_local_db(host_id_list=0):
                 WHERE host_id = '{id}';
                     """
             execute_db_query(query)
-
-# create_db()
