@@ -72,6 +72,3 @@ def execute_main_operations():
         update_zabbix_data()
     except Exception as exc:
         send_email(str(exc))
-
-
-execute_main_operations()

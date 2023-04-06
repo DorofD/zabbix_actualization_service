@@ -14,6 +14,7 @@
 
     <title>Zabbix Actualization Service</title>
   </head>
+
   <body>
     <header>
       <nav>
@@ -22,13 +23,18 @@
             <a class="{{class1}}" href="{{ url_for('index')}}">Главная</a>
           </li>
           <li>
-            <a class="{{class2}}" href="{{ url_for('index')}}">Управление</a>
+            <a class="{{class2}}" href="{{ url_for('management')}}"
+              >Управление</a
+            >
           </li>
           <li>
-            <a class="{{class3}}" href="{{ url_for('index')}}">Выгрузка WS</a>
+            <a class="{{class3}}" href="{{ url_for('ws')}}">Данные WS</a>
           </li>
           <li>
-            <a class="{{class4}}" href="{{ url_for('index')}}">О приложении</a>
+            <a class="{{class4}}" href="{{ url_for('users')}}">Пользователи</a>
+          </li>
+          <li>
+            <a class="{{class5}}" href="{{ url_for('about')}}">О приложении</a>
           </li>
         </ul>
       </nav>
