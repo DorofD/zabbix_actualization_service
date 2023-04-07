@@ -2,20 +2,23 @@
 <nav>
   <ul class="mainmenu">
     <li>
-      <a class="{{class2_1}}" href="{{ url_for('mgmt_types_templates')}}"
-        >Типы-Шаблоны</a
+      <a class="{{class2_1}}" href="{{ url_for('mgmt_operations')}}"
+        >Операции</a
       >
     </li>
     <li>
-      <a class="{{class2_2}}" href="{{ url_for('mgmt_hosts_templates')}}"
-        >Хосты-Шаблоны</a
+      <a class="{{class2_2}}" href="{{ url_for('mgmt_relations')}}">Связи</a>
+    </li>
+    <li>
+      <a class="{{class2_3}}" href="{{ url_for('mgmt_zabbix_params')}}"
+        >Параметры Zabbix</a
       >
     </li>
     <li>
-      <a class="{{class2_3}}" href="{{ url_for('mgmt_logs')}}">Логи</a>
+      <a class="{{class2_4}}" href="{{ url_for('mgmt_logs')}}">Логи</a>
     </li>
     <li>
-      <a class="{{class2_4}}" href="{{ url_for('mgmt_notifications')}}"
+      <a class="{{class2_5}}" href="{{ url_for('mgmt_notifications')}}"
         >Уведомления</a
       >
     </li>

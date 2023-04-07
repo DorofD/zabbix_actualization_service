@@ -1,0 +1,14 @@
+{% extends 'management.html' %} {% block content %} {{ super() }} <br />
+<table>
+  <tr>
+    <th>Операция</th>
+    <th>Назначение</th>
+    <th>Действие</th>
+  </tr>
+  <tr>
+    <td>Полная актуализация</td>
+    <td>Запуск полной актуализации локальных данных и данных zabbix</td>
+    <td><button>Выполнить</button></td>
+  </tr>
+</table>
+{% endblock %}
