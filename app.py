@@ -22,8 +22,17 @@ def management():
     return render_template('management.html', class2='active')
 
 
-@app.route('/mgmt_operations')
+@app.route('/mgmt_operations', methods=(['POST', 'GET']))
 def mgmt_operations():
+    if request.method == 'POST':
+        try:
+            if execute_main_operations():
+                flash(
+                    f'Операция «{request.form["operation"]}» успешно выполнена', category='success')
+        except Exception as exc:
+            flash(
+                f'Операция «{request.form["operation"]}» не выполнена: {str(exc)}', category='error')
+
     return render_template('mgmt_operations.html', class2='active', class2_1='active')
 
 
@@ -37,14 +46,14 @@ def mgmt_zabbix_params():
     return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active')
 
 
-@app.route('/mgmt_logs')
-def mgmt_logs():
-    return render_template('mgmt_logs.html', class2='active', class2_4='active')
-
-
 @app.route('/mgmt_notifications')
 def mgmt_notifications():
-    return render_template('mgmt_notifications.html', class2='active', class2_5='active')
+    return render_template('mgmt_notifications.html', class2='active', class2_4='active')
+
+
+@app.route('/mgmt_logs')
+def mgmt_logs():
+    return render_template('mgmt_logs.html', class2='active', class2_5='active')
 
 
 @app.route('/ws')

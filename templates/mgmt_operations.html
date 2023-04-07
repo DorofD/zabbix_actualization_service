@@ -5,10 +5,22 @@
     <th>Назначение</th>
     <th>Действие</th>
   </tr>
-  <tr>
-    <td>Полная актуализация</td>
-    <td>Запуск полной актуализации локальных данных и данных zabbix</td>
-    <td><button>Выполнить</button></td>
-  </tr>
+  <form
+    action="{{url_for('mgmt_operations')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    {% for cat, msg in get_flashed_messages(True) %}
+    <tr>
+      <td colspan="3"><div class="flash {{cat}}">{{ msg }}</div></td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td>Полная актуализация</td>
+      <td>Запуск полной актуализации локальных данных и данных zabbix</td>
+      <td><input type="submit" name="submit" value="Выполнить" /></td>
+      <input type="hidden" name="operation" value="Полная актуализация" />
+    </tr>
+  </form>
 </table>
 {% endblock %}

@@ -1,3 +1,26 @@
-{% extends 'management.html' %} {% block content %} {{ super() }} Уведомления
-<br />Уведомления <br />Уведомления <br />Уведомления <br />Уведомления
-<br />Уведомления{% endblock %}
+{% extends 'management.html' %} {% block content %} {{ super() }}
+<br />
+<table>
+  <tr>
+    <th>Адресат</th>
+    <th>Тип уведомления</th>
+    <th>Действие</th>
+  </tr>
+  <tr>
+    <td>Биба</td>
+    <td>email</td>
+    <td><input type="submit" value="Удалить" name="delete" /></td>
+  </tr>
+  <tr>
+    <td><input type="text" name="username" /></td>
+
+    <td>
+      <select name="type" id="1">
+        <option value="LDAP">Email</option>
+        <option value="Local">Telegram</option>
+      </select>
+    </td>
+    <td><input type="submit" value="Добавить" name="add" /></td>
+  </tr>
+  {% endblock %}
+</table>

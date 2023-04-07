@@ -36,21 +36,10 @@ def create_db():
     execute_db_query(query)
 
     query = """
-        CREATE TABLE IF NOT EXISTS "groups" (
-        "id"	INTEGER,
-        "group"	TEXT UNIQUE,
-        PRIMARY KEY("id" AUTOINCREMENT)
-        );
-        """
-    execute_db_query(query)
-
-    query = """
         CREATE TABLE IF NOT EXISTS "types" (
         "id"	INTEGER,
         "type"	TEXT UNIQUE,
-        "group_id"  INTEGER,
-        PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("group_id") REFERENCES "groups"("id")
+        PRIMARY KEY("id" AUTOINCREMENT)
         );
         """
     execute_db_query(query)
@@ -118,14 +107,6 @@ def create_db():
         );
         """
     execute_db_query(query)
-
-
-def get_groups_from_local_db():
-    query = """
-        SELECT * FROM groups
-            """
-    result = execute_db_query(query)
-    return result
 
 
 def get_types_from_local_db():
@@ -250,16 +231,9 @@ def get_recipients(recipient_type=0):
     return result
 
 
-def add_groups_to_local_db(groups_to_add):
-    query = f"""
-        INSERT INTO groups ('group') VALUES(?);
-            """
-    execute_db_query(query, groups_to_add)
-
-
 def add_types_to_local_db(types_to_add):
     query = f"""
-        INSERT INTO types ('type', 'group_id') VALUES(?, ?);
+        INSERT INTO types ('type') VALUES(?);
             """
     execute_db_query(query, types_to_add)
 

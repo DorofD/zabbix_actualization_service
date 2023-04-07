@@ -25,7 +25,6 @@ def update_local_data(file):
     try:
         create_db()
         update_shops()
-        import_groups_from_excel(file)
         import_types_from_excel(file)
         set_templates_to_types(file)
         import_hosts()
@@ -50,9 +49,7 @@ def update_zabbix_data():
         for host_type in types_dict:
             if host_type in type_template_dict:
                 import_list = create_import_list(types_dict[host_type])
-                print('start import', host_type)
                 import_hosts_to_zabbix(key=key, host_list=import_list)
-                print('end import', host_type)
 
         # обновление обслуживания
         update_zabbix_maintenance(key)
@@ -79,9 +76,10 @@ def execute_main_operations():
     try:
         update_local_data('data.xlsx')
         update_zabbix_data()
+        return True
     except Exception as exc:
-        try:
-            send_email(str(exc))
+        if send_email(str(exc)):
             app_logger.info("Error message sent to recipients")
-        except Exception as msg_exc:
-            app_logger.error(f"Can't send error message: {msg_exc}")
+        else:
+            app_logger.error(f"Unexpected error, can't send error message")
+        raise Exception(str(exc))

@@ -40,9 +40,10 @@
       </nav>
     </header>
     <div class="content">
-      {% for cat, msg in get_flashed_messages(True) %}
+      <!-- {% for cat, msg in get_flashed_messages(True) %}
       <div class="flash {{cat}}">{{ msg }}</div>
-      {% endfor %}{% block content -%} {% endblock %}
+      {% endfor %} -->
+      {% block content -%} {% endblock %}
     </div>
   </body>
 </html>

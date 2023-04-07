@@ -11,18 +11,21 @@ SMTP_SERVER = os.environ['SMTP_SERVER']
 
 
 def send_email(text):
-    recipients = [recipient[1]
-                  for recipient in get_recipients(recipient_type='email')]
-    message = EmailMessage()
-    message.set_content(text)
-    # тема письма
-    message['Subject'] = f'Actualization error'
-    # отправитель
-    message['From'] = 'Zabbix Actualization Service@bookcentre.ru'
-    # получатель
-    message['To'] = ','.join(recipients)
+    try:
+        recipients = [recipient[1]
+                      for recipient in get_recipients(recipient_type='email')]
+        message = EmailMessage()
+        message.set_content(text)
+        # тема письма
+        message['Subject'] = f'Actualization error'
+        # отправитель
+        message['From'] = 'Zabbix Actualization Service@bookcentre.ru'
+        # получатель
+        message['To'] = ','.join(recipients)
 
-    s = smtplib.SMTP(SMTP_SERVER)
-    s.send_message(message)
-    s.quit()
-    return True
+        s = smtplib.SMTP(SMTP_SERVER)
+        s.send_message(message)
+        s.quit()
+        return True
+    except:
+        return False
