@@ -7,7 +7,7 @@ app.config['SECRET_KEY'] = 'aboba1488'
 scheduler = Scheduler(app)
 
 
-@scheduler.runner(interval=300)
+@scheduler.runner(interval=28800)
 def main_task():
     execute_main_operations()
 

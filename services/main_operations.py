@@ -8,8 +8,17 @@ from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
 from zabbix_scripts.zabbix_maintenance import update_zabbix_maintenance
 import logging
 
+# общий лог файл
 logging.basicConfig(level=logging.INFO,
-                    filename="log.txt", filemode="a", format=f'%(asctime)s %(levelname)s: %(message)s')
+                    filename="flask_log.txt", filemode="a", format=f'%(asctime)s %(levelname)s: %(message)s')
+# лог для логики приложения
+handler = logging.FileHandler('log.txt')
+handler.setFormatter(logging.Formatter(
+    f'%(asctime)s %(levelname)s %(message)s'))
+
+app_logger = logging.getLogger('app_logger')
+app_logger.setLevel(logging.INFO)
+app_logger.addHandler(handler)
 
 
 def update_local_data(file):
@@ -21,10 +30,10 @@ def update_local_data(file):
         set_templates_to_types(file)
         import_hosts()
         delete_missing_hosts()
-        logging.info('Local data update success')
+        app_logger.info("Local data update success")
         return True
     except Exception as exc:
-        logging.error(f'Local data update fail: {exc}')
+        app_logger.error(f"Local data update fail: {exc}")
         raise Exception(exc)
 
 
@@ -59,10 +68,10 @@ def update_zabbix_data():
         if ip_to_delete:
             delete_hosts_from_zabbix(key=key, ip_list=ip_to_delete)
 
-        logging.info('Zabbix data update success')
+        app_logger.info("Zabbix data update success")
         return True
     except Exception as exc:
-        logging.error(f'Zabbix data update fail: {exc}')
+        app_logger.error(f"Zabbix data update fail: {exc}")
         raise Exception(exc)
 
 
@@ -71,4 +80,8 @@ def execute_main_operations():
         update_local_data('data.xlsx')
         update_zabbix_data()
     except Exception as exc:
-        send_email(str(exc))
+        try:
+            send_email(str(exc))
+            app_logger.info("Error message sent to recipients")
+        except Exception as msg_exc:
+            app_logger.error(f"Can't send error message: {msg_exc}")
