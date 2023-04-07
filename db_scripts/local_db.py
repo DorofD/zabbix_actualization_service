@@ -280,15 +280,6 @@ def add_host_template_notes(notes_to_add):
     execute_db_query(query, notes_to_add)
 
 
-def update_types_from_local_db(types_to_update):
-    for host_type in types_to_update:
-        query = f"""
-            UPDATE types SET (group_id) = ('{host_type[1]}')
-            WHERE type = '{host_type[0]}';
-                """
-        execute_db_query(query)
-
-
 def update_tags_from_local_db(tags_to_update):
     for tag in tags_to_update:
         query = f"""

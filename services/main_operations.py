@@ -21,12 +21,11 @@ app_logger.setLevel(logging.INFO)
 app_logger.addHandler(handler)
 
 
-def update_local_data(file):
+def update_local_data():
     try:
         create_db()
         update_shops()
-        import_types_from_excel(file)
-        set_templates_to_types(file)
+        update_types()
         import_hosts()
         delete_missing_hosts()
         app_logger.info("Local data update success")
@@ -74,7 +73,7 @@ def update_zabbix_data():
 
 def execute_main_operations():
     try:
-        update_local_data('data.xlsx')
+        update_local_data()
         update_zabbix_data()
         return True
     except Exception as exc:

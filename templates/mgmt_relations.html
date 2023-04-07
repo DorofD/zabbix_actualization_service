@@ -6,19 +6,38 @@
     <th>Выгрузить</th>
     <th colspan="2">Импортировать</th>
   </tr>
+  {% for cat, msg in get_flashed_messages(True) %}
+  <tr>
+    <td colspan="5"><div class="flash {{cat}}">{{ msg }}</div></td>
+  </tr>
+  {% endfor %}
   <tr>
     <td>Тип-Шаблон</td>
     <td>Кнопка</td>
     <td>Кнопка</td>
-    <td>Файл</td>
-    <td>Кнопка</td>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="file" name="file" /></td>
+      <td><input type="submit" name="submit" value="Загрузить" /></td>
+      <input type="hidden" name="operation" value="set_type_template" />
+    </form>
   </tr>
   <tr>
     <td>Хост-Шаблон</td>
     <td>Кнопка</td>
     <td>Кнопка</td>
-    <td>Файл</td>
-    <td>Кнопка</td>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="file" name="file" /></td>
+      <td><input type="submit" name="submit" value="Загрузить" /></td>
+      <input type="hidden" name="operation" value="set_host_template" />
+    </form>
   </tr>
 </table>
 
