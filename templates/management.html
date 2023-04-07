@@ -1,7 +1,25 @@
 {% extends 'base.html' %} {% block content %} {{ super() }}
-
-<table class="users">
-  Управление
-</table>
+<nav>
+  <ul class="mainmenu">
+    <li>
+      <a class="{{class2_1}}" href="{{ url_for('mgmt_types_templates')}}"
+        >Типы-Шаблоны</a
+      >
+    </li>
+    <li>
+      <a class="{{class2_2}}" href="{{ url_for('mgmt_hosts_templates')}}"
+        >Хосты-Шаблоны</a
+      >
+    </li>
+    <li>
+      <a class="{{class2_3}}" href="{{ url_for('mgmt_logs')}}">Логи</a>
+    </li>
+    <li>
+      <a class="{{class2_4}}" href="{{ url_for('mgmt_notifications')}}"
+        >Уведомления</a
+      >
+    </li>
+  </ul>
+</nav>
 
 {% endblock %}

@@ -22,6 +22,26 @@ def management():
     return render_template('management.html', class2='active')
 
 
+@app.route('/mgmt_types_templates')
+def mgmt_types_templates():
+    return render_template('mgmt_types_templates.html', class2='active', class2_1='active')
+
+
+@app.route('/mgmt_hosts_templates')
+def mgmt_hosts_templates():
+    return render_template('mgmt_hosts_templates.html', class2='active', class2_2='active')
+
+
+@app.route('/mgmt_logs')
+def mgmt_logs():
+    return render_template('mgmt_logs.html', class2='active', class2_3='active')
+
+
+@app.route('/mgmt_notifications')
+def mgmt_notifications():
+    return render_template('mgmt_notifications.html', class2='active', class2_4='active')
+
+
 @app.route('/ws')
 def ws():
     return render_template('ws.html', class3='active')
@@ -38,4 +58,4 @@ def about():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', debug=True)
