@@ -126,6 +126,10 @@ def ws():
             if not hosts:
                 hosts.append(
                     f"Хост с адресом {request.form['address']} не найден")
+        elif request.form['operation'] == 'export':
+            if 'type1' in request.form:
+                print(228)
+
     return render_template('ws.html', class3='active', hosts=hosts)
 
 
