@@ -3,6 +3,7 @@ from flask_scheduler import Scheduler
 from services.main_operations import execute_main_operations
 from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx
 from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient
+from db_scripts.ws_db import get_hosts_from_ws_db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aboba1488'
@@ -115,9 +116,17 @@ def mgmt_logs():
     return render_template('mgmt_logs.html', class2='active', class2_5='active')
 
 
-@ app.route('/ws')
+@ app.route('/ws', methods=(['POST', 'GET']))
 def ws():
-    return render_template('ws.html', class3='active')
+    hosts = []
+    if request.method == 'POST':
+        if request.form['operation'] == 'find' and request.form['address']:
+            hosts = [
+                f'{host[0]} {host[1]} - {host[2]} ({host[3]})' for host in get_hosts_from_ws_db(request.form['address'])]
+            if not hosts:
+                hosts.append(
+                    f"Хост с адресом {request.form['address']} не найден")
+    return render_template('ws.html', class3='active', hosts=hosts)
 
 
 @ app.route('/users')
