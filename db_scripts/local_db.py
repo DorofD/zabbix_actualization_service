@@ -310,6 +310,13 @@ def add_host_template_notes(notes_to_add):
     execute_db_query(query, notes_to_add)
 
 
+def add_recipient(recipient, type):
+    query = f"""
+        INSERT INTO recipients ('recipient', 'type') VALUES('{recipient}', '{type}');
+            """
+    execute_db_query(query)
+
+
 def update_tags_from_local_db(tags_to_update):
     for tag in tags_to_update:
         query = f"""
@@ -383,3 +390,11 @@ def delete_host_template_notes_from_local_db(host_id_list=0):
                 WHERE host_id = '{id}';
                     """
             execute_db_query(query)
+
+
+def delete_recipient(recipient):
+    query = f"""
+        DELETE FROM recipients
+        WHERE recipient = '{recipient}';
+            """
+    execute_db_query(query)

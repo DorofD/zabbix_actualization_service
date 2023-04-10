@@ -6,21 +6,39 @@
     <th>Тип уведомления</th>
     <th>Действие</th>
   </tr>
-  <tr>
-    <td>Биба</td>
-    <td>email</td>
-    <td><input type="submit" value="Удалить" name="delete" /></td>
-  </tr>
-  <tr>
-    <td><input type="text" name="username" /></td>
+  {% for recipient in recipients %}
+  <form
+    action="{{url_for('mgmt_notifications')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <tr>
+      <td>{{recipient[1]}}</td>
+      <td>{{recipient[2]}}</td>
+      <td><input type="submit" name="submit" value="Удалить" /></td>
+      <input type="hidden" name="operation" value="delete" />
+      <input type="hidden" name="recipient" value="{{recipient[1]}}" />
+    </tr>
+  </form>
+  {% endfor %}
 
-    <td>
-      <select name="type" id="1">
-        <option value="LDAP">Email</option>
-        <option value="Local">Telegram</option>
-      </select>
-    </td>
-    <td><input type="submit" value="Добавить" name="add" /></td>
-  </tr>
+  <form
+    action="{{url_for('mgmt_notifications')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <tr>
+      <td><input type="text" name="recipient" /></td>
+      <td>
+        <select name="type">
+          <option value="Email">Email</option>
+          <option value="Telegram">Telegram</option>
+        </select>
+      </td>
+      <td><input type="submit" name="submit" value="Добавить" /></td>
+
+      <input type="hidden" name="operation" value="add" />
+    </tr>
+  </form>
   {% endblock %}
 </table>

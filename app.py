@@ -2,7 +2,7 @@ from flask import Flask, render_template, send_file, url_for, request, flash
 from flask_scheduler import Scheduler
 from services.main_operations import execute_main_operations
 from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx
-from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params
+from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aboba1488'
@@ -78,22 +78,31 @@ def mgmt_zabbix_params():
     if params:
         address = params[0][1]
         version = params[0][2]
-    try:
-        if request.method == 'POST':
+    if request.method == 'POST':
+        try:
             set_zabbix_params(
                 [request.form['address'], request.form['version']])
             address = request.form['address']
             version = request.form['version']
             flash('Параметры изменены', category='success')
-    except Exception as exc:
-        flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
+        except Exception as exc:
+            flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
 
     return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version)
 
 
-@ app.route('/mgmt_notifications')
+@ app.route('/mgmt_notifications', methods=(['POST', 'GET']))
 def mgmt_notifications():
-    return render_template('mgmt_notifications.html', class2='active', class2_4='active')
+    if request.method == 'POST':
+        try:
+            if request.form['operation'] == 'delete':
+                delete_recipient(request.form['recipient'])
+            elif request.form['operation'] == 'add':
+                add_recipient(request.form['recipient'], request.form['type'])
+        except Exception as exc:
+            flash(f'Операция не выполнена: {str(exc)}', category='error')
+    recipients = get_recipients()
+    return render_template('mgmt_notifications.html', class2='active', class2_4='active', recipients=recipients)
 
 
 @ app.route('/mgmt_logs')

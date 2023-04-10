@@ -13,7 +13,7 @@ SMTP_SERVER = os.environ['SMTP_SERVER']
 def send_email(text):
     try:
         recipients = [recipient[1]
-                      for recipient in get_recipients(recipient_type='email')]
+                      for recipient in get_recipients(recipient_type='Email')]
         message = EmailMessage()
         message.set_content(text)
         # тема письма
