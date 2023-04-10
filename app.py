@@ -105,8 +105,13 @@ def mgmt_notifications():
     return render_template('mgmt_notifications.html', class2='active', class2_4='active', recipients=recipients)
 
 
-@ app.route('/mgmt_logs')
+@ app.route('/mgmt_logs', methods=(['POST', 'GET']))
 def mgmt_logs():
+    if request.method == 'POST':
+        try:
+            return send_file('log.txt', as_attachment=True)
+        except Exception as exc:
+            flash(f'Ошибка выгрузки логов: {str(exc)}', category='error')
     return render_template('mgmt_logs.html', class2='active', class2_5='active')
 
 

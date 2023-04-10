@@ -5,28 +5,28 @@
     <th>Назначение</th>
     <th>Действие</th>
   </tr>
+  {% for cat, msg in get_flashed_messages(True) %}
+  <script type="text/javascript">
+    function deletedItem(idItem) {
+      document.getElementById(idItem).remove();
+    }
+  </script>
+
+  <tr id="msg">
+    <td colspan="3" id="msg">
+      <div class="flash {{cat}}" id="msg">
+        {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+          X
+        </button>
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
   <form
     action="{{url_for('mgmt_operations')}}"
     method="POST"
     enctype="multipart/form-data"
   >
-    {% for cat, msg in get_flashed_messages(True) %}
-    <script type="text/javascript">
-      function deletedItem(idItem) {
-        document.getElementById(idItem).remove();
-      }
-    </script>
-
-    <tr id="msg">
-      <td colspan="3" id="msg">
-        <div class="flash {{cat}}" id="msg">
-          {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
-            X
-          </button>
-        </div>
-      </td>
-    </tr>
-    {% endfor %}
     <tr>
       <td>Полная актуализация</td>
       <td>Запуск полной актуализации локальных данных и данных Zabbix</td>

@@ -1,4 +1,25 @@
 {% extends 'management.html' %} {% block content %} {{ super() }}
 <br />
-<button>Выгрузить</button>
+{% for cat, msg in get_flashed_messages(True) %}
+<script type="text/javascript">
+  function deletedItem(idItem) {
+    document.getElementById(idItem).remove();
+  }
+</script>
+
+<!-- <tr id="msg">
+  <td colspan="3" id="msg"> -->
+<div class="flash {{cat}}" id="msg">
+  {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">X</button>
+</div>
+<!-- </td>
+</tr>    -->
+{% endfor %}
+<form
+  action="{{url_for('mgmt_logs')}}"
+  method="POST"
+  enctype="multipart/form-data"
+>
+  <input type="submit" name="submit" value="Выгрузить" />
+</form>
 {% endblock %}
