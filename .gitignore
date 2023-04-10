@@ -16,3 +16,4 @@ __pycache__/
 ~$set_templates.xlsx
 set_templates.xlsx
 flask_log.txt
+export.xlsx

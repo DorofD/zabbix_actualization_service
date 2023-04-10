@@ -11,8 +11,20 @@
     enctype="multipart/form-data"
   >
     {% for cat, msg in get_flashed_messages(True) %}
-    <tr>
-      <td colspan="3"><div class="flash {{cat}}">{{ msg }}</div></td>
+    <script type="text/javascript">
+      function deletedItem(idItem) {
+        document.getElementById(idItem).remove();
+      }
+    </script>
+
+    <tr id="msg">
+      <td colspan="3" id="msg">
+        <div class="flash {{cat}}" id="msg">
+          {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+            X
+          </button>
+        </div>
+      </td>
     </tr>
     {% endfor %}
     <tr>

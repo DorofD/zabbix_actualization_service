@@ -2,19 +2,45 @@
 <table>
   <tr>
     <th>Связь</th>
-    <th>Показать</th>
-    <th>Выгрузить</th>
-    <th colspan="2">Импортировать</th>
+    <th>Отображение</th>
+    <th>Экспорт</th>
+    <th colspan="2">Импорт</th>
   </tr>
   {% for cat, msg in get_flashed_messages(True) %}
-  <tr>
-    <td colspan="5"><div class="flash {{cat}}">{{ msg }}</div></td>
+  <script type="text/javascript">
+    function deletedItem(idItem) {
+      document.getElementById(idItem).remove();
+    }
+  </script>
+
+  <tr id="msg">
+    <td colspan="5" id="msg">
+      <div class="flash {{cat}}" id="msg">
+        {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+          X
+        </button>
+      </div>
+    </td>
   </tr>
   {% endfor %}
   <tr>
     <td>Тип-Шаблон</td>
-    <td>Кнопка</td>
-    <td>Кнопка</td>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="submit" name="submit" value="Показать" /></td>
+      <input type="hidden" name="operation" value="show_type_template" />
+    </form>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="submit" name="submit" value="Выгрузить" /></td>
+      <input type="hidden" name="operation" value="get_type_template" />
+    </form>
     <form
       action="{{url_for('mgmt_relations')}}"
       method="POST"
@@ -27,8 +53,22 @@
   </tr>
   <tr>
     <td>Хост-Шаблон</td>
-    <td>Кнопка</td>
-    <td>Кнопка</td>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="submit" name="submit" value="Показать" /></td>
+      <input type="hidden" name="operation" value="show_host_template" />
+    </form>
+    <form
+      action="{{url_for('mgmt_relations')}}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <td><input type="submit" name="submit" value="Выгрузить" /></td>
+      <input type="hidden" name="operation" value="get_host_template" />
+    </form>
     <form
       action="{{url_for('mgmt_relations')}}"
       method="POST"
@@ -40,5 +80,17 @@
     </form>
   </tr>
 </table>
-
-{% endblock %}
+{% if notes %}
+<br />
+<table>
+  <tr>
+    <th colspan="2">{{table_name}}</th>
+  </tr>
+  {% for note in notes %}
+  <tr>
+    <td>{{note[0]}}</td>
+    <td>{{note[1]}}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %} {% endblock %}

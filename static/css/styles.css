@@ -123,18 +123,22 @@ P {
 .flash.success {
   border: 1px solid #21db56;
   background: #aeffc5;
+  padding-bottom: 25px;
   border-radius: 6px;
+
 }
 
 .flash.error {
   border: 1px solid #ff4343;
   background: #ff9c9c;
+  padding-bottom: 25px;
   border-radius: 6px;
 }
 
 .flash.wrongpass {
   border: 1px solid #f7de00;
   background: #fff8bb;
+  padding-bottom: 25px;
   border-radius: 6px;
 }
 
@@ -155,6 +159,7 @@ input[type="text"] {
   border: 2px solid grey;
   border-radius: 4px;
   font-size: medium;
+  width: 400px;
 }
 
 input[type="password"] {
@@ -169,4 +174,8 @@ input[type="submit"] {
 
 input[type="file"] {
   font-size: medium;
+}
+
+button{
+  float: right 
 }

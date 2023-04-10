@@ -1,7 +1,8 @@
 from flask import Flask, render_template, send_file, url_for, request, flash
 from flask_scheduler import Scheduler
 from services.main_operations import execute_main_operations
-from services.host_parameters import set_templates_to_types, set_templates_to_hosts
+from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx
+from db_scripts.local_db import get_type_template_view, get_host_template_view
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aboba1488'
@@ -39,6 +40,8 @@ def mgmt_operations():
 
 @app.route('/mgmt_relations', methods=(['POST', 'GET']))
 def mgmt_relations():
+    notes = []
+    table_name = ''
     if request.method == 'POST':
         try:
             if request.form['operation'] == 'set_type_template':
@@ -49,14 +52,34 @@ def mgmt_relations():
                 set_templates_to_hosts(request.files['file'])
                 flash('Связи хостов с шаблонами успешно установлены',
                       category='success')
+            if request.form['operation'] == "show_type_template":
+                notes = get_type_template_view()
+                table_name = 'Тип хоста из WS - Шаблон Zabbix'
+            if request.form['operation'] == "show_host_template":
+                notes = get_host_template_view()
+                table_name = 'Адрес хоста - Шаблон Zabbix'
+            if request.form['operation'] == "get_type_template":
+                file = get_relations_xlsx(relation="get_type_template")
+                return send_file(file, as_attachment=True)
+            if request.form['operation'] == "get_host_template":
+                file = get_relations_xlsx(relation="get_host_template")
+                return send_file(file, as_attachment=True)
         except Exception as exc:
             flash(
-                f'Ошибка создания связей: {str(exc)}', category='error')
-    return render_template('mgmt_relations.html', class2='active', class2_2='active')
+                f'Ошибка выполнения операции: {str(exc)}', category='error')
+    return render_template('mgmt_relations.html', class2='active', class2_2='active', notes=notes, table_name=table_name)
 
 
-@ app.route('/mgmt_zabbix_params')
+@ app.route('/mgmt_zabbix_params', methods=(['POST', 'GET']))
 def mgmt_zabbix_params():
+    try:
+        if request.method == 'POST':
+            print(request.form['address'])
+            print(request.form['version'])
+            flash('Параметры изменены', category='success')
+    except Exception as exc:
+        flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
+
     return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active')
 
 

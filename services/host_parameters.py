@@ -145,6 +145,30 @@ def set_templates_to_hosts(file):
     return True
 
 
+def get_relations_xlsx(relation):
+    try:
+        if os.path.exists('export.xlsx'):
+            os.remove('export.xlsx')
+        if relation == "get_type_template":
+            notes = get_type_template_view()
+            column1 = 'type'
+            column2 = 'template'
+        elif relation == "get_host_template":
+            notes = get_host_template_view()
+            column1 = 'host'
+            column2 = 'template'
+        writer = pd.ExcelWriter("export.xlsx")
+        data = pd.DataFrame({
+            column1: [note[0] for note in notes],
+            column2: [note[1] for note in notes],
+        })
+        data.to_excel(writer, 'Sheet1', index=False)
+        writer.save()
+        return 'export.xlsx'
+    except Exception as exc:
+        raise Exception(f'Ошибка формирования .xlsx: {exc}')
+
+
 # set_templates_to_hosts('data.xlsx')
 # set_templates_to_types('set_templates.xlsx')
 # update_templates()

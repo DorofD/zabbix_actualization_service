@@ -19,16 +19,41 @@
   <tr>
     <th colspan="2">Изменить параметры</th>
   </tr>
-  <tr>
-    <td>Адрес сервера</td>
-    <td>ЗначениеЗначениеЗначениеЗначение</td>
+  {% for cat, msg in get_flashed_messages(True) %}
+  <script type="text/javascript">
+    function deletedItem(idItem) {
+      document.getElementById(idItem).remove();
+    }
+  </script>
+
+  <tr id="msg">
+    <td colspan="2" id="msg">
+      <div class="flash {{cat}}" id="msg">
+        {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+          X
+        </button>
+      </div>
+    </td>
   </tr>
-  <tr>
-    <td>Версия Zabbix</td>
-    <td>Значение</td>
-  </tr>
-  <tr>
-    <th colspan="2"><button>Изменить</button></th>
-  </tr>
+  {% endfor %}
+  <form
+    action="{{url_for('mgmt_zabbix_params')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <tr>
+      <td>Адрес сервера</td>
+      <td><input type="text" name="address" /></td>
+    </tr>
+    <tr>
+      <td>Версия Zabbix</td>
+      <td><input type="text" name="version" /></td>
+    </tr>
+    <tr>
+      <th colspan="2">
+        <input type="submit" name="submit" value="Изменить" />
+      </th>
+    </tr>
+  </form>
 </table>
 {% endblock %}
