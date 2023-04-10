@@ -43,10 +43,11 @@ def get_hosts_from_zabbix(key, groupid=0, tag=0, tag_value=0, ip_list=0):
 
 
 def import_hosts_to_zabbix(key, host_list):
+    params = get_zabbix_params_from_local_db()
+    version = params[0][2]
     hosts = {"zabbix_export":
-             # {"version": "5.2",
              {
-                 "version": "5.0",
+                 "version": version,
                  "hosts": host_list}
              }
 

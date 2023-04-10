@@ -2,20 +2,29 @@ import os
 from dotenv import load_dotenv
 import requests
 import ast
+from db_scripts.local_db import get_zabbix_params_from_local_db
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
-ZABBIX_SERVER = os.environ['ZABBIX_SERVER']
 ZABBIX_USER = os.environ['ZABBIX_USER']
 ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
 
 
 def send_request_to_zabbix(request):
+    params = get_zabbix_params_from_local_db()
+    if not params:
+        raise Exception('Zabbix server parameters not found')
+    if params[0][2] == '5.0':
+        zabbix_server = f'http://{params[0][1]}/zabbix/api_jsonrpc.php'
+    elif params[0][2] == '5.2':
+        zabbix_server = f'http://{params[0][1]}/api_jsonrpc.php'
+    else:
+        raise Exception(
+            f'Unexpected Zabbix version ({params[0][2]}), versions 5.0 and 5.2 are currently available')
     responce = requests.post(
-        # rf'{ZABBIX_SERVER}/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.2
-        rf'{ZABBIX_SERVER}/zabbix/api_jsonrpc.php', json=request, headers={'Content-Type': 'application/json-rpc'})  # для Zabbix 5.0
+        zabbix_server, json=request, headers={'Content-Type': 'application/json-rpc'})
     decode_responce = responce.content.decode('utf-8')
     decode_responce = decode_responce.replace('true', 'True')
     decode_responce = decode_responce.replace('false', 'False')

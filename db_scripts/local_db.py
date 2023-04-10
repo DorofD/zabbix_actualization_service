@@ -108,6 +108,16 @@ def create_db():
         """
     execute_db_query(query)
 
+    query = """
+        CREATE TABLE IF NOT EXISTS "zabbix_params" (
+        "id"	INTEGER,
+        "address"	TEXT UNIQUE,
+        "version"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
 
 def get_types_from_local_db():
     query = """
@@ -229,6 +239,26 @@ def get_recipients(recipient_type=0):
         """
         result = execute_db_query(query)
     return result
+
+
+def get_zabbix_params_from_local_db():
+    query = f"""
+        SELECT * FROM zabbix_params
+    """
+    result = execute_db_query(query)
+    return result
+
+
+def set_zabbix_params(params):
+
+    query = f"""
+        DELETE FROM zabbix_params;
+            """
+    execute_db_query(query)
+    query = f"""
+        INSERT INTO zabbix_params ('address', 'version') VALUES('{params[0]}','{params[1]}');
+            """
+    execute_db_query(query)
 
 
 def add_types_to_local_db(types_to_add):
