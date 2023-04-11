@@ -1,9 +1,9 @@
 from flask import Flask, render_template, send_file, url_for, request, flash
 from flask_scheduler import Scheduler
 from services.main_operations import execute_main_operations
-from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx
+from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx
 from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient
-from db_scripts.ws_db import get_hosts_from_ws_db
+from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aboba1488'
@@ -119,18 +119,23 @@ def mgmt_logs():
 @ app.route('/ws', methods=(['POST', 'GET']))
 def ws():
     hosts = []
+    types = [host_type[0] for host_type in get_types_from_ws_db()]
     if request.method == 'POST':
-        if request.form['operation'] == 'find' and request.form['address']:
-            hosts = [
-                f'{host[0]} {host[1]} - {host[2]} ({host[3]})' for host in get_hosts_from_ws_db(request.form['address'])]
-            if not hosts:
-                hosts.append(
-                    f"Хост с адресом {request.form['address']} не найден")
-        elif request.form['operation'] == 'export':
-            if 'type1' in request.form:
-                print(228)
+        try:
+            if request.form['operation'] == 'find' and request.form['address']:
+                hosts = [
+                    f'{host[0]} {host[1]} - {host[2]} ({host[3]})' for host in get_hosts_from_ws_db(request.form['address'])]
+                if not hosts:
+                    hosts.append(
+                        f"Хост с адресом {request.form['address']} не найден")
+            elif request.form['operation'] == 'export':
+                notes = [name for name in request.form]
+                file = get_hosts_xlsx(types=types, notes=notes)
+                return send_file(file, as_attachment=True)
+        except Exception as exc:
+            flash(f'Ошибка выполнения операции: {str(exc)}', category='error')
 
-    return render_template('ws.html', class3='active', hosts=hosts)
+    return render_template('ws.html', class3='active', hosts=hosts, types=types)
 
 
 @ app.route('/users')

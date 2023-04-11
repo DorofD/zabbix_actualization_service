@@ -169,6 +169,30 @@ def get_relations_xlsx(relation):
         raise Exception(f'Ошибка формирования .xlsx: {exc}')
 
 
+def get_hosts_xlsx(notes, types):
+    if 'all' in notes:
+        hosts = get_hosts_from_ws_db(types='all')
+    else:
+        types_to_export = []
+        for note in notes:
+            if note in types:
+                types_to_export.append(note)
+        hosts = get_hosts_from_ws_db(types=types_to_export)
+    if os.path.exists('export.xlsx'):
+        os.remove('export.xlsx')
+    writer = pd.ExcelWriter("export.xlsx")
+    data = pd.DataFrame({
+        'PID': [host[0] for host in hosts],
+        'Магазин': [host[1] for host in hosts],
+        'Тип': [host[2] for host in hosts],
+        'IP': [host[3] for host in hosts],
+        'Хост': [host[4] for host in hosts],
+        'Комментарий': [host[5] for host in hosts],
+    })
+    data.to_excel(writer, 'Sheet1', index=False)
+    writer.save()
+    return 'export.xlsx'
+
 # set_templates_to_hosts('data.xlsx')
 # set_templates_to_types('set_templates.xlsx')
 # update_templates()
