@@ -170,16 +170,41 @@ def get_relations_xlsx(relation):
 
 
 def get_hosts_xlsx(notes, types):
+    if os.path.exists('export.xlsx'):
+        os.remove('export.xlsx')
+
     if 'all' in notes:
         hosts = get_hosts_from_ws_db(types='all')
+    elif 'models' in notes:
+        notes = get_routers_from_ws_db()
+        writer = pd.ExcelWriter("export.xlsx")
+        data = pd.DataFrame({
+            'PID': [note[0] for note in notes],
+            'Магазин': [note[1] for note in notes],
+            'Модель роутера': [note[2] for note in notes],
+        })
+        data.to_excel(writer, 'Sheet1', index=False)
+        writer.save()
+        return 'export.xlsx'
+    elif 'shops' in notes:
+        notes = get_shops_from_ws_db()
+        writer = pd.ExcelWriter("export.xlsx")
+        data = pd.DataFrame({
+            'PID': [note[0] for note in notes],
+            'Магазин': [note[1] for note in notes],
+        })
+        data.to_excel(writer, 'Sheet1', index=False)
+        writer.save()
+        return 'export.xlsx'
     else:
         types_to_export = []
         for note in notes:
             if note in types:
                 types_to_export.append(note)
+        if not types_to_export:
+            raise Exception("Не выбрано ни одного типа")
         hosts = get_hosts_from_ws_db(types=types_to_export)
-    if os.path.exists('export.xlsx'):
-        os.remove('export.xlsx')
+
     writer = pd.ExcelWriter("export.xlsx")
     data = pd.DataFrame({
         'PID': [host[0] for host in hosts],
@@ -188,6 +213,8 @@ def get_hosts_xlsx(notes, types):
         'IP': [host[3] for host in hosts],
         'Хост': [host[4] for host in hosts],
         'Комментарий': [host[5] for host in hosts],
+        'Автор записи': [host[6] for host in hosts],
+
     })
     data.to_excel(writer, 'Sheet1', index=False)
     writer.save()

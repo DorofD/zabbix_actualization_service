@@ -44,7 +44,17 @@
     <input type="hidden" name="operation" value="export" />
     <tr>
       <td>
-        <input type="checkbox" name="all" value="" /> <b>Полная выгрузка</b>
+        <input type="checkbox" name="all" value="" /> <b> Полная выгрузка</b>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input type="checkbox" name="models" value="" /> <b> Модели роутеров</b>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input type="checkbox" name="shops" value="" /> <b> Только магазины</b>
       </td>
     </tr>
     {% for host_type in types %}
