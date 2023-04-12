@@ -1,13 +1,16 @@
-from flask import Flask, render_template, send_file, url_for, request, flash
+from flask import Flask, render_template, send_file, url_for, request, flash, session, redirect
 from flask_scheduler import Scheduler
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from services.main_operations import execute_main_operations
 from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx
-from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient
+from services.users import *
+from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
 from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'aboba1488'
+app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
 scheduler = Scheduler(app)
+login_manager = LoginManager(app)
 
 
 @scheduler.runner(interval=28800)
@@ -15,18 +18,29 @@ def main_task():
     execute_main_operations()
 
 
+@login_manager.user_loader
+def load_user(user_name):
+    return UserLogin().get_user_from_db(user_name)
+
+
 @app.route('/')
 def index():
-    return render_template('index.html', class1='active')
+    if not current_user.is_authenticated:
+        return render_template('login.html')
+    return render_template('index.html', class1='active', login=session['username'])
 
 
 @app.route('/management')
 def management():
-    return render_template('management.html', class2='active')
+    if not current_user.is_authenticated:
+        return render_template('login.html')
+    return render_template('management.html', class2='active', login=session['username'])
 
 
 @app.route('/mgmt_operations', methods=(['POST', 'GET']))
 def mgmt_operations():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     if request.method == 'POST':
         try:
             if execute_main_operations():
@@ -36,11 +50,13 @@ def mgmt_operations():
             flash(
                 f'Операция «{request.form["operation"]}» не выполнена: {str(exc)}', category='error')
 
-    return render_template('mgmt_operations.html', class2='active', class2_1='active')
+    return render_template('mgmt_operations.html', class2='active', class2_1='active', login=session['username'])
 
 
 @app.route('/mgmt_relations', methods=(['POST', 'GET']))
 def mgmt_relations():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     notes = []
     table_name = ''
     if request.method == 'POST':
@@ -68,11 +84,13 @@ def mgmt_relations():
         except Exception as exc:
             flash(
                 f'Ошибка выполнения операции: {str(exc)}', category='error')
-    return render_template('mgmt_relations.html', class2='active', class2_2='active', notes=notes, table_name=table_name)
+    return render_template('mgmt_relations.html', class2='active', class2_2='active', notes=notes, table_name=table_name, login=session['username'])
 
 
 @ app.route('/mgmt_zabbix_params', methods=(['POST', 'GET']))
 def mgmt_zabbix_params():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     address = 'Отсутствует'
     version = 'Отсутствует'
     params = get_zabbix_params_from_local_db()
@@ -89,11 +107,13 @@ def mgmt_zabbix_params():
         except Exception as exc:
             flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
 
-    return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version)
+    return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version, login=session['username'])
 
 
 @ app.route('/mgmt_notifications', methods=(['POST', 'GET']))
 def mgmt_notifications():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     if request.method == 'POST':
         try:
             if request.form['operation'] == 'delete':
@@ -103,21 +123,25 @@ def mgmt_notifications():
         except Exception as exc:
             flash(f'Операция не выполнена: {str(exc)}', category='error')
     recipients = get_recipients()
-    return render_template('mgmt_notifications.html', class2='active', class2_4='active', recipients=recipients)
+    return render_template('mgmt_notifications.html', class2='active', class2_4='active', recipients=recipients, login=session['username'])
 
 
 @ app.route('/mgmt_logs', methods=(['POST', 'GET']))
 def mgmt_logs():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     if request.method == 'POST':
         try:
             return send_file('log.txt', as_attachment=True)
         except Exception as exc:
             flash(f'Ошибка выгрузки логов: {str(exc)}', category='error')
-    return render_template('mgmt_logs.html', class2='active', class2_5='active')
+    return render_template('mgmt_logs.html', class2='active', class2_5='active', login=session['username'])
 
 
 @ app.route('/ws', methods=(['POST', 'GET']))
 def ws():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
     hosts = []
     types = [host_type[0] for host_type in get_types_from_ws_db()]
     if request.method == 'POST':
@@ -135,17 +159,59 @@ def ws():
         except Exception as exc:
             flash(f'Ошибка выполнения операции: {str(exc)}', category='error')
 
-    return render_template('ws.html', class3='active', hosts=hosts, types=types)
+    return render_template('ws.html', class3='active', hosts=hosts, types=types, login=session['username'])
 
 
-@ app.route('/users')
+@ app.route('/users', methods=(['POST', 'GET']))
 def users():
-    return render_template('users.html', class4='active')
+    if not current_user.is_authenticated:
+        return render_template('login.html')
+    if request.method == 'POST':
+        try:
+            if request.form['operation'] == 'delete':
+                delete_user(login=request.form['login'])
+            if request.form['operation'] == 'add':
+                add_user(login=request.form['login'],
+                         password='', auth_type='LDAP')
+            if request.form['operation'] == 'change':
+                if request.form['password1'] != request.form['password2']:
+                    raise Exception("Пароли не совпадают")
+                change_password(
+                    request.form['login'], request.form['password1'])
+                flash(
+                    f"Пароль пользователя {request.form['login']} успешно изменен", category='success')
+        except Exception as exc:
+            flash(f'Операция не выполнена: {str(exc)}', category='error')
+    users = get_users()
+
+    return render_template('users.html', class4='active', users=users, login=session['username'])
 
 
 @ app.route('/about')
 def about():
-    return render_template('about.html', class5='active')
+    if not current_user.is_authenticated:
+        return render_template('login.html')
+    return render_template('about.html', class5='active', login=session['username'])
+
+
+@app.route('/login', methods=('GET', 'POST'))
+def login():
+    if request.method == 'POST':
+        user = signin(request.form['login'], request.form['password'])
+        if user:
+            userlogin = UserLogin().create(user)
+            session['username'] = request.form['login']
+            login_user(userlogin)
+            return redirect(url_for('index'))
+        else:
+            flash('Не удалось войти', category='wrongpass')
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

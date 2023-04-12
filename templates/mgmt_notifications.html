@@ -6,7 +6,23 @@
     <th>Тип уведомления</th>
     <th>Действие</th>
   </tr>
-  {% for recipient in recipients %}
+  {% for cat, msg in get_flashed_messages(True) %}
+  <script type="text/javascript">
+    function deletedItem(idItem) {
+      document.getElementById(idItem).remove();
+    }
+  </script>
+
+  <tr id="msg">
+    <td colspan="3" id="msg">
+      <div class="flash {{cat}}" id="msg">
+        {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+          X
+        </button>
+      </div>
+    </td>
+  </tr>
+  {% endfor %} {% for recipient in recipients %}
   <form
     action="{{url_for('mgmt_notifications')}}"
     method="POST"

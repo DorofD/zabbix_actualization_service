@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link
+      type="text/css"
+      href="{{ url_for('static', filename='css/styles.css')}}"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='images/icon.png')}}"
+    />
+    <meta charset="UTF-8" />
+    <title>Zabbix Actualization Service</title>
+  </head>
+  <body>
+    <div class="login">
+      <form class="login" action="{{url_for('login')}}" method="post">
+        {% for cat, msg in get_flashed_messages(True) %}
+
+        <tr id="msg">
+          <td id="msg">
+            <div class="flash {{cat}}" id="msg">{{ msg }}</div>
+          </td>
+        </tr>
+        {% endfor %}
+        <p><label>Логин</label> <input type="text" name="login" required /></p>
+        <p>
+          <label>Пароль</label>
+          <input type="password" name="password" required />
+        </p>
+        <p><input type="submit" value="Войти" /></p>
+      </form>
+    </div>
+  </body>
+</html>

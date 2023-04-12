@@ -118,6 +118,17 @@ def create_db():
         """
     execute_db_query(query)
 
+    query = """
+        CREATE TABLE IF NOT EXISTS "users" (
+        "id"	INTEGER,
+        "login"	TEXT UNIQUE,
+        "password"	TEXT,
+        "auth_type"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        """
+    execute_db_query(query)
+
 
 def get_types_from_local_db():
     query = """
@@ -249,6 +260,23 @@ def get_zabbix_params_from_local_db():
     return result
 
 
+def get_users():
+    query = f"""
+        SELECT * FROM users
+            """
+    result = execute_db_query(query)
+    return result
+
+
+def get_user_by_name(login):
+    query = f"""
+        SELECT * FROM users
+        WHERE login = '{login}'
+            """
+    result = execute_db_query(query)
+    return result
+
+
 def set_zabbix_params(params):
 
     query = f"""
@@ -310,9 +338,16 @@ def add_host_template_notes(notes_to_add):
     execute_db_query(query, notes_to_add)
 
 
-def add_recipient(recipient, type):
+def add_recipient(recipient, rec_type):
     query = f"""
-        INSERT INTO recipients ('recipient', 'type') VALUES('{recipient}', '{type}');
+        INSERT INTO recipients ('recipient', 'type') VALUES('{recipient}', '{rec_type}');
+            """
+    execute_db_query(query)
+
+
+def add_user(login, password, auth_type):
+    query = f"""
+        INSERT INTO users ('login', 'password', 'auth_type') VALUES('{login}', '{password}', '{auth_type}');
             """
     execute_db_query(query)
 
@@ -342,6 +377,14 @@ def update_hosts_from_local_db(hosts_to_update):
             WHERE ip = '{host[0]}';
                 """
         execute_db_query(query)
+
+
+def update_user_password(login, password):
+    query = f"""
+            UPDATE users SET (password) = ('{password}')
+            WHERE login = '{login}';
+                """
+    execute_db_query(query)
 
 
 def delete_shops_from_local_db(pids_to_delete):
@@ -396,5 +439,13 @@ def delete_recipient(recipient):
     query = f"""
         DELETE FROM recipients
         WHERE recipient = '{recipient}';
+            """
+    execute_db_query(query)
+
+
+def delete_user(login):
+    query = f"""
+        DELETE FROM users
+        WHERE login = '{login}';
             """
     execute_db_query(query)

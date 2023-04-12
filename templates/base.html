@@ -36,14 +36,11 @@
           <li>
             <a class="{{class5}}" href="{{ url_for('about')}}">О приложении</a>
           </li>
+          <li><a class="user" href="{{ url_for('logout')}}">Выйти</a></li>
+          <li class="user">{{ login }}</li>
         </ul>
       </nav>
     </header>
-    <div class="content">
-      <!-- {% for cat, msg in get_flashed_messages(True) %}
-      <div class="flash {{cat}}">{{ msg }}</div>
-      {% endfor %} -->
-      {% block content -%} {% endblock %}
-    </div>
+    <div class="content">{% block content -%} {% endblock %}</div>
   </body>
 </html>
