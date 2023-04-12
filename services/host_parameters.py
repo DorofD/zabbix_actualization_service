@@ -220,10 +220,19 @@ def get_hosts_xlsx(notes, types):
     writer.save()
     return 'export.xlsx'
 
-# set_templates_to_hosts('data.xlsx')
-# set_templates_to_types('set_templates.xlsx')
-# update_templates()
-# print(get_type_template_view())
 
-# import_types_from_excel('data.xlsx')
-# import_tags_from_excel('data.xlsx')
+def get_events_from_log():
+    event_list = []
+    if not os.path.exists('log.txt'):
+        event_list.append(['...', 'На данный момент события отсутствуют'])
+        return event_list
+    with open('log.txt') as file:
+        for line in (file.readlines()[-10:]):
+            event_list.append(line.replace('\n', ''))
+    if not event_list:
+        event_list.append(['...', 'На данный момент события отсутствуют'])
+        return event_list
+    final_list = []
+    for note in reversed(event_list):
+        final_list.append([note[0:16], note[24:]])
+    return final_list

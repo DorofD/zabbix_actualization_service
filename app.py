@@ -2,7 +2,7 @@ from flask import Flask, render_template, send_file, url_for, request, flash, se
 from flask_scheduler import Scheduler
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from services.main_operations import execute_main_operations
-from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx
+from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
 from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
 from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
@@ -27,7 +27,8 @@ def load_user(user_name):
 def index():
     if not current_user.is_authenticated:
         return render_template('login.html')
-    return render_template('index.html', class1='active', login=session['username'])
+    events = get_events_from_log()
+    return render_template('index.html', class1='active', login=session['username'], events=events)
 
 
 @app.route('/management')

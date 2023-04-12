@@ -1,11 +1,22 @@
 {% extends 'base.html' %} {% block content %} {{ super() }}
-
-<table class="users">
+<table>
   <tr>
-    <th>За</th>
-    <th>1488</th>
-    <th>лупа</th>
+    <td>
+      <b>Здарова</b>
+      <img src="static/images/whale.png" alt="" />
+    </td>
+    <th>Последние события</th>
   </tr>
+  {% for note in events %}
+  <tr>
+    <td>{{note[0]}}</td>
+    {% if 'ERROR' in note[1]%}
+    <td class="error">{{note[1]}}</td>
+    {% else %}
+    <td>{{note[1]}}</td>
+    {% endif %}
+  </tr>
+  {% endfor %}
 </table>
 
 {% endblock %}

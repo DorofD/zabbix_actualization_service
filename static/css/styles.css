@@ -6,6 +6,7 @@ body {
   width: 100%;
 }
 
+
 ul.mainmenu {
   list-style-type: none;
   margin: 0;
@@ -177,4 +178,8 @@ input[type="file"] {
 
 button{
   float: right 
+}
+
+td.error {
+  background: #ff9c9c
 }
