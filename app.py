@@ -7,6 +7,7 @@ from services.users import *
 from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
 from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 from zabbix_scripts.zabbix_templates import *
+from zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
@@ -44,13 +45,23 @@ def mgmt_operations():
     if not current_user.is_authenticated:
         return render_template('login.html')
     if request.method == 'POST':
-        try:
-            if execute_main_operations():
+        if request.form['operation'] == 'main':
+            try:
+                if execute_main_operations():
+                    flash(
+                        f'Операция «Полная актуализация» успешно выполнена', category='success')
+            except Exception as exc:
                 flash(
-                    f'Операция «{request.form["operation"]}» успешно выполнена', category='success')
-        except Exception as exc:
-            flash(
-                f'Операция «{request.form["operation"]}» не выполнена: {str(exc)}', category='error')
+                    f'Операция «Полная актуализация» не выполнена: {str(exc)}', category='error')
+        if request.form['operation'] == 'delete_zabbix_hosts':
+            try:
+                key = get_zabbix_auth_key()
+                if delete_hosts_from_zabbix(key=key, ip_list=[]):
+                    flash(
+                        f'Операция «Удаление хостов» успешно выполнена', category='success')
+            except Exception as exc:
+                flash(
+                    f'Операция «Удаление хостов» не выполнена: {str(exc)}', category='error')
 
     return render_template('mgmt_operations.html', class2='active', class2_1='active', login=session['username'])
 

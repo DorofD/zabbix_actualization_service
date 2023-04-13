@@ -449,3 +449,10 @@ def delete_user(login):
         WHERE login = '{login}';
             """
     execute_db_query(query)
+
+
+def delete_type_template_notes():
+    query = f"""
+        DELETE FROM type_template
+            """
+    execute_db_query(query)

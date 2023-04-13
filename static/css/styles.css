@@ -77,10 +77,6 @@ div.content {
   width: 100%;
 }
 
-img {
-  width: 100%;
-  text-align: center;
-}
 
 label.search {
   font-size: medium;
@@ -159,7 +155,6 @@ input[type="text"] {
   border: 2px solid grey;
   border-radius: 4px;
   font-size: medium;
-  /* width: 400px; */
 }
 
 input[type="password"] {
@@ -183,3 +178,38 @@ button{
 td.error {
   background: #ff9c9c
 }
+
+/* спиннер */
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 3px solid grey;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  
+}
+.loader::after {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid;
+  border-color: #d60000 transparent;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 

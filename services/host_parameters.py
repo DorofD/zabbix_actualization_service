@@ -90,18 +90,15 @@ def set_templates_to_types(file):
                       for template in get_templates_from_local_db()}
     notes_to_add = []
     for i in sheet.index:
+        if str(sheet['type_template'][i]) not in templates_dict and str(sheet['type_template'][i]) != 'nan':
+            raise Exception(
+                f"Неопознанный шаблон в файле импорта: {str(sheet['type_template'][i])}")
         if str(sheet['types'][i]) != 'nan' and sheet['types'][i] in types_dict and str(sheet['type_template'][i]) != 'nan':
             notes_to_add.append(tuple(
                 [types_dict[sheet['types'][i]], templates_dict[sheet['type_template'][i]]]))
 
-    # проверка уникальности записей и удаление дубликатов
-    existing_notes = get_type_template_notes()
-    not_unique = []
-    for note in notes_to_add:
-        if note in existing_notes:
-            not_unique.append(note)
-    for note in not_unique:
-        notes_to_add.remove(note)
+    # удаление существующих записей
+    delete_type_template_notes()
     # добавление записей
     if notes_to_add:
         add_type_template_notes(notes_to_add)
