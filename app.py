@@ -73,9 +73,13 @@ def mgmt_relations():
                       category='success')
             if request.form['operation'] == "show_type_template":
                 notes = get_type_template_view()
+                if not notes:
+                    notes = [['Связи отсутствуют', '']]
                 table_name = 'Тип хоста из WS - Шаблон Zabbix'
             if request.form['operation'] == "show_host_template":
                 notes = get_host_template_view()
+                if not notes:
+                    notes = [['Связи отсутствуют', '']]
                 table_name = 'Адрес хоста - Шаблон Zabbix'
             if request.form['operation'] == "get_type_template":
                 file = get_relations_xlsx(relation="get_type_template")

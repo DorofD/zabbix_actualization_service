@@ -68,7 +68,6 @@
     >
       <th>
         Текущие шаблоны
-
         <input type="submit" name="submit" value="Обновить" />
       </th>
     </form>
@@ -76,7 +75,9 @@
   {% if not templates%}
   <td>Шаблоны отсутствуют</td>
   {% else %} {% for template in templates %}
-  <td>{{template}}</td>
+  <tr>
+    <td>{{template}}</td>
+  </tr>
   {% endfor%} {% endif %}
 </table>
 {% endblock %}
