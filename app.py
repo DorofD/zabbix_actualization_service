@@ -6,6 +6,7 @@ from services.host_parameters import set_templates_to_types, set_templates_to_ho
 from services.users import *
 from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
 from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
+from zabbix_scripts.zabbix_templates import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
@@ -95,20 +96,25 @@ def mgmt_zabbix_params():
     address = 'Отсутствует'
     version = 'Отсутствует'
     params = get_zabbix_params_from_local_db()
+    key = get_zabbix_auth_key()
+    templates = get_templates_from_zabbix(key)
     if params:
         address = params[0][1]
         version = params[0][2]
     if request.method == 'POST':
         try:
+            if not request.form['address'] or not request.form['version']:
+                raise Exception('Оба поля обязательны к заполнению')
             set_zabbix_params(
                 [request.form['address'], request.form['version']])
+            request.form['address']
             address = request.form['address']
             version = request.form['version']
             flash('Параметры изменены', category='success')
         except Exception as exc:
             flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
 
-    return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version, login=session['username'])
+    return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version, templates=templates, login=session['username'])
 
 
 @ app.route('/mgmt_notifications', methods=(['POST', 'GET']))

@@ -58,16 +58,3 @@ def delete_groups_from_zabbix(key, groups):
             raise Exception(
                 f"Can't delete group from zabbix: {responce['error']['data']}")
     return True
-
-
-# key = get_zabbix_auth_key()
-
-# sas = get_groups_from_zabbix(key)
-# for i in sas:
-#     print(i, sas[i])
-
-# group = 'ZALUPA'
-# print(add_group_to_zabbix(key, group))
-
-# groups = ['sas', 'bombas']
-# delete_groups_from_zabbix(key, groups)

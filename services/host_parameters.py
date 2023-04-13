@@ -196,6 +196,15 @@ def get_hosts_xlsx(notes, types):
         data.to_excel(writer, 'Sheet1', index=False)
         writer.save()
         return 'export.xlsx'
+    elif 'host_types' in notes:
+        notes = get_types_from_ws_db()
+        writer = pd.ExcelWriter("export.xlsx")
+        data = pd.DataFrame({
+            'Types': [note[0] for note in notes],
+        })
+        data.to_excel(writer, 'Sheet1', index=False)
+        writer.save()
+        return 'export.xlsx'
     else:
         types_to_export = []
         for note in notes:

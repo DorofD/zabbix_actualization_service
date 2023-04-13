@@ -132,8 +132,3 @@ def create_import_list(type_id):
         import_list.append(template_for_import_list)
 
     return import_list
-
-
-# create_import_list(6)
-# print(import_hosts())
-# delete_missing_hosts()

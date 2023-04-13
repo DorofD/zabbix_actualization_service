@@ -1,9 +1,11 @@
 from zabbix_scripts.zabbix_operations import *
 from db_scripts.local_db import get_hosts_from_local_db
 import json
-
+import pandas as pd
 
 # !добавить поиск по значению тега
+
+
 def get_hosts_from_zabbix(key, groupid=0, tag=0, tag_value=0, ip_list=0):
     request = {
         "jsonrpc": "2.0",
@@ -100,19 +102,3 @@ def delete_hosts_from_zabbix(key, ip_list):
     if 'error' in responce:
         raise Exception(f"Can't delete hosts: {responce['error']['data']}")
     return True
-
-
-# key = get_zabbix_auth_key()
-# delete_hosts_from_zabbix(key, [])
-# print(import_hosts_to_zabbix(key, hosts))
-
-
-# boba = ['172.16.49.1']
-# print(delete_hosts_from_zabbix(key, boba))
-# 18 - WAN1
-# 19 - WAN2
-# sas = get_hosts_from_zabbix(key, ip_list=boba)  # groupid=[18, 19]
-# bebos = {sas[i]['host']: sas[i]['hostid'] for i in range(len(sas))}
-# print('IP LIST:', bebos)
-
-# delete_all_hosts_from_zabbix(key)

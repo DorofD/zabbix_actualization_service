@@ -96,16 +96,3 @@ def update_zabbix_maintenance(key):
             add_maintenance_to_zabbix(
                 key=key, maintenance=maintenance_template)
     return True
-
-
-# key = get_zabbix_auth_key()
-# update_zabbix_maintenance(key)
-# maintenance = {'name': 'zalupa1488',
-#                'start_time': '50400',
-#                'period': '43200',
-#                'group_names': ['WAN2', 'WAN1']}
-# print(add_maintenance_to_zabbix(key, maintenance))
-
-# sas = get_maintenance_from_zabbix(key)
-# for i in sas:
-#     print(i)
