@@ -1,9 +1,7 @@
-import os
-from dotenv import load_dotenv
 import pandas as pd
 import re
-from db_scripts.local_db import *
-from db_scripts.ws_db import *
+from models.local_db import *
+from models.ws_db import *
 
 
 def get_shops_from_xls(file):

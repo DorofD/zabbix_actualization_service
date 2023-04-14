@@ -1,7 +1,7 @@
-from db_scripts.local_db import *
-from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
-from zabbix_scripts.zabbix_groups import get_groups_from_zabbix, add_group_to_zabbix
-from db_scripts.ws_db import get_hosts_from_ws_db
+from models.local_db import *
+from services.zabbix_scripts.zabbix_operations import get_zabbix_auth_key
+from services.zabbix_scripts.zabbix_groups import get_groups_from_zabbix, add_group_to_zabbix
+from models.ws_db import get_hosts_from_ws_db
 
 
 def import_hosts():

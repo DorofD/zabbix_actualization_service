@@ -1,5 +1,5 @@
-from zabbix_scripts.zabbix_operations import *
-from zabbix_scripts.zabbix_groups import get_groups_from_zabbix
+from services.zabbix_scripts.zabbix_operations import *
+from services.zabbix_scripts.zabbix_groups import get_groups_from_zabbix
 import pandas as pd
 
 

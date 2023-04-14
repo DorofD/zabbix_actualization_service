@@ -1,11 +1,11 @@
-from services.host_parameters import *
-from services.shops import *
-from services.hosts import *
+from services.ws_entities.host_parameters import *
+from services.ws_entities.shops import *
+from services.ws_entities.hosts import *
 from services.notifications import *
-from zabbix_scripts.zabbix_hosts import *
-from zabbix_scripts.zabbix_groups import *
-from zabbix_scripts.zabbix_operations import get_zabbix_auth_key
-from zabbix_scripts.zabbix_maintenance import update_zabbix_maintenance
+from services.zabbix_scripts.zabbix_hosts import *
+from services.zabbix_scripts.zabbix_groups import *
+from services.zabbix_scripts.zabbix_operations import get_zabbix_auth_key
+from services.zabbix_scripts.zabbix_maintenance import update_zabbix_maintenance
 import logging
 
 # общий лог файл

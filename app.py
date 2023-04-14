@@ -2,13 +2,13 @@ from flask import Flask, render_template, send_file, url_for, request, flash, se
 from flask_scheduler import Scheduler
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from services.main_operations import execute_main_operations
-from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
+from services.ws_entities.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
-from services.shops import update_excel_path
-from db_scripts.local_db import get_excel_path, get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
-from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
-from zabbix_scripts.zabbix_templates import *
-from zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
+from services.ws_entities.shops import update_excel_path
+from models.local_db import get_users, get_excel_path, get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
+from models.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
+from services.zabbix_scripts.zabbix_templates import *
+from services.zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
@@ -111,10 +111,16 @@ def mgmt_params():
         return render_template('login.html')
     address = 'Отсутствует'
     version = 'Отсутствует'
+    templates = ['Шаблоны не найдены']
     msg_type = ''
-    params = get_zabbix_params_from_local_db()
-    key = get_zabbix_auth_key()
-    templates = get_templates_from_zabbix(key)
+    try:
+        params = get_zabbix_params_from_local_db()
+        key = get_zabbix_auth_key()
+        templates = get_templates_from_zabbix(key)
+    except:
+        flash(
+            f'Ошибка доступа к Zabbix серверу, проверьте корректность введенных параметров', category='error')
+        msg_type = 'zabbix'
     if params:
         address = params[0][1]
         version = params[0][2]

@@ -1,7 +1,7 @@
 import pandas as pd
-from db_scripts.local_db import *
-from db_scripts.ws_db import *
-from zabbix_scripts.zabbix_templates import *
+from models.local_db import *
+from models.ws_db import *
+from services.zabbix_scripts.zabbix_templates import *
 
 
 def import_tags_from_excel(file):

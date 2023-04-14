@@ -1,7 +1,5 @@
-from zabbix_scripts.zabbix_operations import *
-from db_scripts.local_db import get_hosts_from_local_db
+from services.zabbix_scripts.zabbix_operations import *
 import json
-import pandas as pd
 
 # !добавить поиск по значению тега
 

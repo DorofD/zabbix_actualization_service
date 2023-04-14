@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from ldap3 import Connection
 from werkzeug.security import generate_password_hash, check_password_hash
-from db_scripts.local_db import get_users, get_user_by_name, update_user_password
+from models.local_db import get_user_by_name, update_user_password
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):

@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import requests
 import ast
-from db_scripts.local_db import get_zabbix_params_from_local_db
+from models.local_db import get_zabbix_params_from_local_db
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')

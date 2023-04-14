@@ -1,6 +1,6 @@
 import smtplib
 from email.message import EmailMessage
-from db_scripts.local_db import get_recipients
+from models.local_db import get_recipients
 from dotenv import load_dotenv
 import os
 
