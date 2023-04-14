@@ -119,6 +119,12 @@ def create_db():
     execute_db_query(query)
 
     query = """
+        CREATE TABLE IF NOT EXISTS "excel_params" (
+        "path"	TEXT UNIQUE);
+        """
+    execute_db_query(query)
+
+    query = """
         CREATE TABLE IF NOT EXISTS "users" (
         "id"	INTEGER,
         "login"	TEXT UNIQUE,
@@ -277,6 +283,14 @@ def get_user_by_name(login):
     return result
 
 
+def get_excel_path():
+    query = f"""
+        SELECT * FROM excel_params
+            """
+    result = execute_db_query(query)
+    return result
+
+
 def set_zabbix_params(params):
 
     query = f"""
@@ -348,6 +362,13 @@ def add_recipient(recipient, rec_type):
 def add_user(login, password, auth_type):
     query = f"""
         INSERT INTO users ('login', 'password', 'auth_type') VALUES('{login}', '{password}', '{auth_type}');
+            """
+    execute_db_query(query)
+
+
+def add_excel_path(excel_path):
+    query = f"""
+        INSERT INTO excel_params ('path') VALUES('{excel_path}');
             """
     execute_db_query(query)
 
@@ -454,5 +475,12 @@ def delete_user(login):
 def delete_type_template_notes():
     query = f"""
         DELETE FROM type_template
+            """
+    execute_db_query(query)
+
+
+def delete_excel_path():
+    query = f"""
+        DELETE FROM excel_params
             """
     execute_db_query(query)

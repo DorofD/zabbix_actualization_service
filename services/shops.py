@@ -5,12 +5,6 @@ import re
 from db_scripts.local_db import *
 from db_scripts.ws_db import *
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-
-EXPORT_XLS_FILE = os.environ['EXPORT_XLS_FILE']
-
 
 def get_shops_from_xls(file):
     sheet = pd.read_excel(file)
@@ -69,7 +63,12 @@ def get_shops_from_xls(file):
 
 def update_shops():
     # получение всех магазинов из "Магазинов в цифрах"
-    shops_from_xls = get_shops_from_xls(EXPORT_XLS_FILE)
+    excel_path = get_excel_path()
+    if not excel_path:
+        raise Exception('Путь к сетевому файлу Excel не найден')
+    else:
+        excel_path = excel_path[0][0]
+    shops_from_xls = get_shops_from_xls(excel_path)
     shops_from_xls_dict = {}
     for i in range(len(shops_from_xls)):
         shops_from_xls_dict[shops_from_xls[i][0]] = shops_from_xls[i]
@@ -122,4 +121,10 @@ def update_shops():
     if pids_to_delete:
         delete_shops_from_local_db(pids_to_delete)
 
+    return True
+
+
+def update_excel_path(new_excel_path):
+    delete_excel_path()
+    add_excel_path(new_excel_path)
     return True

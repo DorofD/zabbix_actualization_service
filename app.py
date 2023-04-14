@@ -4,7 +4,8 @@ from flask_login import LoginManager, login_user, login_required, current_user, 
 from services.main_operations import execute_main_operations
 from services.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
-from db_scripts.local_db import get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
+from services.shops import update_excel_path
+from db_scripts.local_db import get_excel_path, get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
 from db_scripts.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 from zabbix_scripts.zabbix_templates import *
 from zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
@@ -104,32 +105,55 @@ def mgmt_relations():
     return render_template('mgmt_relations.html', class2='active', class2_2='active', notes=notes, table_name=table_name, login=session['username'])
 
 
-@ app.route('/mgmt_zabbix_params', methods=(['POST', 'GET']))
-def mgmt_zabbix_params():
+@ app.route('/mgmt_params', methods=(['POST', 'GET']))
+def mgmt_params():
     if not current_user.is_authenticated:
         return render_template('login.html')
     address = 'Отсутствует'
     version = 'Отсутствует'
+    msg_type = ''
     params = get_zabbix_params_from_local_db()
     key = get_zabbix_auth_key()
     templates = get_templates_from_zabbix(key)
     if params:
         address = params[0][1]
         version = params[0][2]
-    if request.method == 'POST':
-        try:
-            if not request.form['address'] or not request.form['version']:
-                raise Exception('Оба поля обязательны к заполнению')
-            set_zabbix_params(
-                [request.form['address'], request.form['version']])
-            request.form['address']
-            address = request.form['address']
-            version = request.form['version']
-            flash('Параметры изменены', category='success')
-        except Exception as exc:
-            flash(f'Ошибка изменения параметров: {str(exc)}', category='error')
+    excel_path = get_excel_path()
+    if not excel_path:
+        excel_path = 'Путь не найден'
+    else:
+        excel_path = excel_path[0][0]
 
-    return render_template('mgmt_zabbix_params.html', class2='active', class2_3='active', address=address, version=version, templates=templates, login=session['username'])
+    if request.method == 'POST':
+        if request.form['operation'] == 'change_zabbix':
+            try:
+                if not request.form['address'] or not request.form['version']:
+                    raise Exception('Оба поля обязательны к заполнению')
+                set_zabbix_params(
+                    [request.form['address'], request.form['version']])
+                request.form['address']
+                address = request.form['address']
+                version = request.form['version']
+                flash('Параметры изменены', category='success')
+                msg_type = 'zabbix'
+            except Exception as exc:
+                flash(
+                    f'Ошибка изменения параметров: {str(exc)}', category='error')
+                msg_type = 'zabbix'
+        if request.form['operation'] == 'change_excel':
+            try:
+                if not request.form['excel_path']:
+                    raise Exception('Поле обязательно к заполнению')
+                update_excel_path(request.form['excel_path'])
+                flash('Параметры изменены', category='success')
+                msg_type = 'excel'
+                excel_path = get_excel_path()[0][0]
+            except Exception as exc:
+                flash(
+                    f'Ошибка изменения параметров: {str(exc)}', category='error')
+                msg_type = 'excel'
+
+    return render_template('mgmt_params.html', class2='active', class2_3='active', excel_path=excel_path, address=address, version=version, templates=templates, msg_type=msg_type, login=session['username'])
 
 
 @ app.route('/mgmt_notifications', methods=(['POST', 'GET']))

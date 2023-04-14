@@ -1,0 +1,146 @@
+{% extends 'management.html' %} {% block content %} {{ super() }}
+<br />
+<table>
+  <tr>
+    <th>Zabbix</th>
+    <th>Сетевой Excel файл</th>
+  </tr>
+  <tr>
+    <td>
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Текущие параметры</th>
+        </tr>
+        <tr>
+          <td>Адрес сервера</td>
+          <td>{{address}}</td>
+        </tr>
+        <tr>
+          <td>Версия Zabbix</td>
+          <td>{{version}}</td>
+        </tr>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Изменение параметров</th>
+        </tr>
+        {% if msg_type == "zabbix" %} {% for cat, msg in
+        get_flashed_messages(True) %}
+        <script type="text/javascript">
+          function deletedItem(idItem) {
+            document.getElementById(idItem).remove();
+          }
+        </script>
+
+        <tr id="msg">
+          <td colspan="2" id="msg">
+            <div class="flash {{cat}}" id="msg">
+              {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+                X
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %} {% endif %}
+        <form
+          action="{{url_for('mgmt_params')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>Адрес сервера</td>
+            <td><input type="text" name="address" /></td>
+          </tr>
+          <tr>
+            <td>Версия Zabbix</td>
+            <td><input type="text" name="version" /></td>
+          </tr>
+          <tr>
+            <th colspan="2">
+              <input type="submit" name="submit" value="Изменить" />
+              <input type="hidden" name="operation" value="change_zabbix" />
+            </th>
+          </tr>
+        </form>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <tr>
+          <form
+            action="{{url_for('mgmt_params')}}"
+            method="GET"
+            enctype="multipart/form-data"
+          >
+            <th>
+              Текущие шаблоны
+              <input type="submit" name="submit" value="Обновить" />
+            </th>
+          </form>
+        </tr>
+        {% if not templates%}
+        <td>Шаблоны отсутствуют</td>
+        {% else %} {% for template in templates %}
+        <tr>
+          <td>{{template}}</td>
+        </tr>
+        {% endfor%} {% endif %}
+      </table>
+    </td>
+    <td>
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Текущий путь к файлу</th>
+        </tr>
+        <tr>
+          <td>{{excel_path}}</td>
+        </tr>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Изменение параметров</th>
+        </tr>
+        {% if msg_type == "excel" %} {% for cat, msg in
+        get_flashed_messages(True) %}
+        <script type="text/javascript">
+          function deletedItem(idItem) {
+            document.getElementById(idItem).remove();
+          }
+        </script>
+
+        <tr id="msg">
+          <td id="msg">
+            <div class="flash {{cat}}" id="msg">
+              {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+                X
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %} {% endif %}
+        <form
+          action="{{url_for('mgmt_params')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>Новый путь</td>
+          </tr>
+          <tr>
+            <td>
+              <input class="excel_path_style" type="text" name="excel_path" />
+            </td>
+          </tr>
+          <tr>
+            <th>
+              <input type="submit" name="submit" value="Изменить" />
+              <input type="hidden" name="operation" value="change_excel" />
+            </th>
+          </tr>
+        </form>
+      </table>
+    </td>
+  </tr>
+</table>
+{% endblock %}
