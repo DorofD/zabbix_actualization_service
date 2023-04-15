@@ -1,7 +1,7 @@
 from flask import Flask, render_template, send_file, url_for, request, flash, session, redirect
 from flask_scheduler import Scheduler
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
-from services.main_operations import execute_main_operations
+from services.main_operations import execute_main_operations, update_local_data
 from services.ws_entities.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
 from services.ws_entities.shops import update_excel_path
@@ -54,6 +54,14 @@ def mgmt_operations():
             except Exception as exc:
                 flash(
                     f'Операция «Полная актуализация» не выполнена: {str(exc)}', category='error')
+        if request.form['operation'] == 'update_local_data':
+            try:
+                if update_local_data():
+                    flash(
+                        f'Операция «Обновление локальных данных» успешно выполнена', category='success')
+            except Exception as exc:
+                flash(
+                    f'Операция «Обновление локальных данных» не выполнена: {str(exc)}', category='error')
         if request.form['operation'] == 'delete_zabbix_hosts':
             try:
                 key = get_zabbix_auth_key()
