@@ -23,7 +23,6 @@ app_logger.addHandler(handler)
 
 def update_local_data():
     try:
-        create_db()
         update_shops()
         update_types()
         import_hosts()
