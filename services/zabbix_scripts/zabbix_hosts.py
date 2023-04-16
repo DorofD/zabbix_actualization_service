@@ -1,4 +1,4 @@
-from services.zabbix_scripts.zabbix_operations import *
+from services.zabbix_scripts.zabbix_api import *
 import json
 
 # !добавить поиск по значению тега

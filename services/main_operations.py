@@ -4,7 +4,7 @@ from services.ws_entities.hosts import *
 from services.notifications import *
 from services.zabbix_scripts.zabbix_hosts import *
 from services.zabbix_scripts.zabbix_groups import *
-from services.zabbix_scripts.zabbix_operations import get_zabbix_auth_key
+from services.zabbix_scripts.zabbix_api import get_zabbix_auth_key
 from services.zabbix_scripts.zabbix_maintenance import update_zabbix_maintenance
 import logging
 

@@ -1,4 +1,4 @@
-from services.zabbix_scripts.zabbix_operations import *
+from services.zabbix_scripts.zabbix_api import *
 
 
 def get_templates_from_zabbix(key):

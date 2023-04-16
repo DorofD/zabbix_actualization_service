@@ -4,7 +4,10 @@ from models.local_db import get_recipients
 from dotenv import load_dotenv
 import os
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+project_path = os.path.join(os.path.dirname(__file__))
+dotenv_path = str(project_path[0:(project_path.index(
+    'zabbix_actualization_service') + 29)]) + '.env'
+
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 SMTP_SERVER = os.environ['SMTP_SERVER']

@@ -5,7 +5,10 @@ import ast
 from models.local_db import get_zabbix_params_from_local_db
 
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+project_path = os.path.join(os.path.dirname(__file__))
+dotenv_path = str(project_path[0:(project_path.index(
+    'zabbix_actualization_service') + 29)]) + '.env'
+
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 ZABBIX_USER = os.environ['ZABBIX_USER']

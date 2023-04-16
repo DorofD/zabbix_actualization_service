@@ -2,10 +2,12 @@ from dotenv import load_dotenv
 import os
 import pyodbc
 
-dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+project_path = os.path.join(os.path.dirname(__file__))
+dotenv_path = str(project_path[0:(project_path.index(
+    'zabbix_actualization_service') + 29)]) + '.env'
+
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
-
 DB_SERVER = os.environ['DB_SERVER']
 DATABASE = os.environ['DATABASE']
 DB_USER = os.environ['DB_USER']
