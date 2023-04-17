@@ -2,6 +2,18 @@ import pandas as pd
 import re
 from models.local_db import *
 from models.ws_db import *
+import os
+from smbclient import shutil
+
+
+project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
+dotenv_path = project_path + '.env'
+
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+ZABBIX_USER = os.environ['ZABBIX_USER']
+ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
 
 
 def get_shops_from_xls(file):
@@ -60,12 +72,15 @@ def get_shops_from_xls(file):
 
 
 def update_shops():
+    # получение магазинов в цифрах
+    if os.path.exists(project_path + 'shops_in_numbers.xls'):
+        os.remove(project_path + 'shops_in_numbers.xls')
+    excel_path_from_db = get_excel_path()
+    excel_path = project_path + 'shops_in_numbers.xls'
+    shutil.copyfile(excel_path_from_db[0][0], excel_path,
+                    username='zabbix', password='@WSXzaq1')
+
     # получение всех магазинов из "Магазинов в цифрах"
-    excel_path = get_excel_path()
-    if not excel_path:
-        raise Exception('Путь к сетевому файлу Excel не найден')
-    else:
-        excel_path = excel_path[0][0]
     shops_from_xls = get_shops_from_xls(excel_path)
     shops_from_xls_dict = {}
     for i in range(len(shops_from_xls)):
@@ -118,7 +133,7 @@ def update_shops():
     # удаление отсутствующих магазинов
     if pids_to_delete:
         delete_shops_from_local_db(pids_to_delete)
-
+    os.remove(project_path + 'shops_in_numbers.xls')
     return True
 
 

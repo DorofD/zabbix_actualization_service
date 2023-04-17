@@ -5,9 +5,9 @@ import ast
 from models.local_db import get_zabbix_params_from_local_db
 
 
-project_path = os.path.join(os.path.dirname(__file__))
-dotenv_path = str(project_path[0:(project_path.index(
-    'zabbix_actualization_service') + 29)]) + '.env'
+project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
+dotenv_path = project_path + '.env'
 
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
