@@ -8,9 +8,7 @@ pip install -r requirements.txt
 pip install wheel uwsgi
 mv .env.example .env
 python init.py
-sudo su
-curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
-exit
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > sudo /etc/apt/sources.list.d/mssql-release.list
 sudo apt-get update
 sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
