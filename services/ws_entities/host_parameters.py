@@ -2,6 +2,7 @@ import pandas as pd
 from models.local_db import *
 from models.ws_db import *
 from services.zabbix_scripts.zabbix_templates import *
+import os
 
 
 def import_tags_from_excel(file):

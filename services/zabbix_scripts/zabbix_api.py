@@ -1,18 +1,10 @@
-import os
-from dotenv import load_dotenv
 import requests
 import ast
 from models.local_db import get_zabbix_params_from_local_db
+from services.env_vars import get_var
 
-
-project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
-    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
-dotenv_path = project_path + '.env'
-
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-ZABBIX_USER = os.environ['ZABBIX_USER']
-ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
+ZABBIX_USER = get_var('ZABBIX_USER')
+ZABBIX_PASSWORD = get_var('ZABBIX_PASSWORD')
 
 
 def send_request_to_zabbix(request):

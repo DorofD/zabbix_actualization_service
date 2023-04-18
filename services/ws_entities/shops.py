@@ -4,16 +4,11 @@ from models.local_db import *
 from models.ws_db import *
 import os
 from smbclient import shutil
+from services.env_vars import get_var
+from sys import platform
 
-
-project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
-    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
-dotenv_path = project_path + '.env'
-
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-ZABBIX_USER = os.environ['ZABBIX_USER']
-ZABBIX_PASSWORD = os.environ['ZABBIX_PASSWORD']
+ZABBIX_USER = get_var('ZABBIX_USER')
+ZABBIX_PASSWORD = get_var('ZABBIX_PASSWORD')
 
 
 def get_shops_from_xls(file):
@@ -73,6 +68,13 @@ def get_shops_from_xls(file):
 
 def update_shops():
     # получение магазинов в цифрах
+    if platform == "linux" or platform == "linux2":
+        project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+            os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)] + '/shops_in_numbers.xls')
+    elif platform == "win32":
+        project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+            os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)] + 'shops_in_numbers.xls')
+
     if os.path.exists(project_path + 'shops_in_numbers.xls'):
         os.remove(project_path + 'shops_in_numbers.xls')
     excel_path_from_db = get_excel_path()

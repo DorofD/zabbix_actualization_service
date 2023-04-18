@@ -1,19 +1,12 @@
-from dotenv import load_dotenv
-import os
 import pyodbc
-from sys import platform
+from services.env_vars import get_var
 
-project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
-    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
-dotenv_path = project_path + '.env'
-print(project_path)
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-DB_SERVER = os.environ['DB_SERVER']
-DATABASE = os.environ['DATABASE']
-DB_USER = os.environ['DB_USER']
-DB_PASSWORD = os.environ['DB_PASSWORD']
-DB_DRIVER = os.environ['DB_DRIVER']
+
+DB_SERVER = get_var('DB_SERVER')
+DATABASE = get_var('DATABASE')
+DB_USER = get_var('DB_USER')
+DB_PASSWORD = get_var('DB_PASSWORD')
+DB_DRIVER = get_var('DB_DRIVER')
 
 
 def get_cursor():

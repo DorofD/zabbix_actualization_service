@@ -1,16 +1,10 @@
 import smtplib
 from email.message import EmailMessage
 from models.local_db import get_recipients
-from dotenv import load_dotenv
-import os
+from services.env_vars import get_var
 
-project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
-    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
-dotenv_path = project_path + '.env'
 
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-SMTP_SERVER = os.environ['SMTP_SERVER']
+SMTP_SERVER = get_var('SMTP_SERVER')
 
 
 def send_email(text):

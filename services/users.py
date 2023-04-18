@@ -1,18 +1,13 @@
-import os
-from dotenv import load_dotenv
 from ldap3 import Connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from models.local_db import get_user_by_name, update_user_password
+from services.env_vars import get_var
 
-project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
-    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
-dotenv_path = project_path + '.env'
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
-LDAP_SERVER = os.environ['LDAP_SERVER']
-LDAP_USER = os.environ['LDAP_USER']
-LDAP_USER_CN = os.environ['LDAP_USER_CN']
-SEARCH_USER_CATALOG = os.environ['SEARCH_USER_CATALOG']
+
+LDAP_SERVER = get_var('LDAP_SERVER')
+LDAP_USER = get_var('LDAP_USER')
+LDAP_USER_CN = get_var('LDAP_USER_CN')
+SEARCH_USER_CATALOG = get_var('SEARCH_USER_CATALOG')
 
 
 def ldap_auth(login, password):
