@@ -1,11 +1,12 @@
 from dotenv import load_dotenv
 import os
 import pyodbc
+from sys import platform
 
-project_path = os.path.join(os.path.dirname(__file__))
-dotenv_path = str(project_path[0:(project_path.index(
-    'zabbix_actualization_service') + 29)]) + '.env'
-
+project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+    os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
+dotenv_path = project_path + '.env'
+print(project_path)
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 DB_SERVER = os.environ['DB_SERVER']
@@ -15,12 +16,16 @@ DB_PASSWORD = os.environ['DB_PASSWORD']
 DB_DRIVER = os.environ['DB_DRIVER']
 
 
+def get_cursor():
+    conn = pyodbc.connect(
+        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD};Trusted_Connection=no;TrustServerCertificate=Yes')
+    return conn.cursor()
+
+
 def get_hosts_from_ws_db(ip='', types=[]):
     # если не указан ip - возвращает список кортежей в формате (10, '172.16.47.193', 'Роутер')
     # если ip указан - возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)', 'Роутер')
-    conn = pyodbc.connect(
-        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
-    cursor = conn.cursor()
+    cursor = get_cursor()
     if type(types) == list and types:
         types = list(map(lambda x: f"TYPE = '{x}'", types))
         types_string = ' or '.join(types)
@@ -55,9 +60,7 @@ def get_hosts_from_ws_db(ip='', types=[]):
 
 def get_shops_from_ws_db():
     # возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)')
-    conn = pyodbc.connect(
-        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
-    cursor = conn.cursor()
+    cursor = get_cursor()
     query = f""" SELECT DISTINCT Expr1, Expr2 FROM dbo.CamInShops_r"""
     cursor.execute(query)
     result = list(cursor.fetchall())
@@ -66,9 +69,7 @@ def get_shops_from_ws_db():
 
 def get_types_from_ws_db():
     # возвращает список кортежей в формате ('WAN остров', )
-    conn = pyodbc.connect(
-        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
-    cursor = conn.cursor()
+    cursor = get_cursor()
     query = f""" SELECT DISTINCT type FROM dbo.CamInShops_r"""
     cursor.execute(query)
     result = list(cursor.fetchall())
@@ -77,9 +78,7 @@ def get_types_from_ws_db():
 
 def get_routers_from_ws_db():
     # возвращает список кортежей в формате (10, 'Екатеринбург 15 (город)', 'VPN2S')
-    conn = pyodbc.connect(
-        f'DRIVER={DB_DRIVER};SERVER={DB_SERVER};DATABASE={DATABASE};UID={DB_USER};PWD={DB_PASSWORD}')
-    cursor = conn.cursor()
+    cursor = get_cursor()
     query = f""" SELECT DISTINCT Expr1, Expr2, RouterModel FROM dbo.Router_in_Shop"""
     cursor.execute(query)
     result = list(cursor.fetchall())
