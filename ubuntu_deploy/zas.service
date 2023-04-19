@@ -1,5 +1,5 @@
 [Unit]
-Description=uWSGI instance to serve zas
+Description=uWSGI instance to serve Zabbix Update Service
 After=network.target
 
 [Service]
