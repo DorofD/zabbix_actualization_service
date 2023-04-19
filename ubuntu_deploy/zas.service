@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve zas
+After=network.target
+
+[Service]
+User=sammy
+Group=www-data
+WorkingDirectory=/home/user_name/project_folder
+Environment="PATH=/home/user_name/project_folder/project_env/bin"
+ExecStart=/home/user_name/project_folder/project_env/bin/uwsgi --ini project.ini
+
+[Install]
+WantedBy=multi-user.target
