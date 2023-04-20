@@ -247,10 +247,13 @@ def users():
     return render_template('users.html', class4='active', users=users, login=session['username'])
 
 
-@ app.route('/about')
+@ app.route('/about', methods=(['POST', 'GET']))
 def about():
     if not current_user.is_authenticated:
         return render_template('login.html')
+    if request.method == 'POST':
+        return send_file('readme.pdf', as_attachment=True)
+
     return render_template('about.html', class5='active', login=session['username'])
 
 
@@ -275,4 +278,4 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)

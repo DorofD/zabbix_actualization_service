@@ -11,8 +11,9 @@ sudo apt-get update
 # настройка окружения
 python3.9 -m venv zas_env
 source zas_env/bin/activate
+pip install wheel
 pip install -r requirements.txt
-pip install wheel uwsgi
+pip install uwsgi
 mv .env.example .env
 python init.py
 deactivate

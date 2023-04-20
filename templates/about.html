@@ -1,7 +1,18 @@
 {% extends 'base.html' %} {% block content %} {{ super() }}
 
 <table class="users">
-  <h1>about</h1>
+  <form
+    action="{{url_for('about')}}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <tr>
+      <td>Ознакомиться с работой сервиса можно в документации</td>
+      <td>
+        <input type="submit" name="submit" value="Скачать" />
+      </td>
+    </tr>
+  </form>
 </table>
 
 {% endblock %}
