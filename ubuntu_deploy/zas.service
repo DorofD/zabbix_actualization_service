@@ -7,7 +7,7 @@ User=sammy
 Group=www-data
 WorkingDirectory=/home/user_name/project_folder
 Environment="PATH=/home/user_name/project_folder/project_env/bin"
-ExecStart=/home/user_name/project_folder/project_env/bin/uwsgi --ini zas.ini
+ExecStart=/home/user_name/project_folder/project_env/bin/uwsgi --ini project.ini
 
 [Install]
 WantedBy=multi-user.target
