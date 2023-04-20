@@ -69,18 +69,17 @@ def get_shops_from_xls(file):
 def update_shops():
     # получение магазинов в цифрах
     if platform == "linux" or platform == "linux2":
-        project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+        excel_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
             os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)] + '/shops_in_numbers.xls')
     elif platform == "win32":
-        project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
+        excel_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
             os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)] + 'shops_in_numbers.xls')
 
-    if os.path.exists(project_path + 'shops_in_numbers.xls'):
-        os.remove(project_path + 'shops_in_numbers.xls')
+    if os.path.exists(excel_path):
+        os.remove(excel_path)
     excel_path_from_db = get_excel_path()
-    excel_path = project_path + 'shops_in_numbers.xls'
     shutil.copyfile(excel_path_from_db[0][0], excel_path,
-                    username='zabbix', password='@WSXzaq1')
+                    username=ZABBIX_USER, password=ZABBIX_PASSWORD)
 
     # получение всех магазинов из "Магазинов в цифрах"
     shops_from_xls = get_shops_from_xls(excel_path)
@@ -135,7 +134,7 @@ def update_shops():
     # удаление отсутствующих магазинов
     if pids_to_delete:
         delete_shops_from_local_db(pids_to_delete)
-    os.remove(project_path + 'shops_in_numbers.xls')
+    os.remove(excel_path)
     return True
 
 
