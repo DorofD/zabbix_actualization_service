@@ -7,10 +7,12 @@ from services.env_vars import get_var
 SMTP_SERVER = get_var('SMTP_SERVER')
 
 
-def send_email(text):
+def send_email(text, recipient=0):
     try:
-        recipients = [recipient[1]
-                      for recipient in get_recipients(recipient_type='Email')]
+        if not recipient:
+            recipients = [note[1] for note in get_recipients()]
+        else:
+            recipients = [recipient, ]
         message = EmailMessage()
         message.set_content(text)
         # тема письма
@@ -20,9 +22,8 @@ def send_email(text):
         # получатель
         message['To'] = ','.join(recipients)
 
-        s = smtplib.SMTP(SMTP_SERVER)
-        s.send_message(message)
-        s.quit()
+        smtplib.SMTP(SMTP_SERVER).send_message(message)
+        smtplib.SMTP(SMTP_SERVER).quit()
         return True
     except:
         return False

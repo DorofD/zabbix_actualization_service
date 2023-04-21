@@ -99,10 +99,9 @@ def create_db():
     execute_db_query(query)
 
     query = """
-        CREATE TABLE IF NOT EXISTS "recipients" (
+        CREATE TABLE IF NOT EXISTS "email" (
         "id"	INTEGER,
         "recipient"	TEXT UNIQUE,
-        "type"	TEXT,
         PRIMARY KEY("id" AUTOINCREMENT)
         );
         """
@@ -121,6 +120,14 @@ def create_db():
     query = """
         CREATE TABLE IF NOT EXISTS "excel_params" (
         "path"	TEXT UNIQUE);
+        """
+    execute_db_query(query)
+
+    query = """
+        CREATE TABLE IF NOT EXISTS "telegram" (
+        "chat_id"	TEXT,
+        "bot_token"	TEXT,
+        "active"	INTEGER);
         """
     execute_db_query(query)
 
@@ -243,18 +250,11 @@ def get_host_template_view(host_id=0):
     return result
 
 
-def get_recipients(recipient_type=0):
-    if not recipient_type:
-        query = """
-            SELECT * FROM recipients
-        """
-        result = execute_db_query(query)
-    else:
-        query = f"""
-            SELECT * FROM recipients
-            WHERE type = '{recipient_type}'
-        """
-        result = execute_db_query(query)
+def get_recipients():
+    query = """
+        SELECT * FROM email
+    """
+    result = execute_db_query(query)
     return result
 
 
@@ -286,6 +286,14 @@ def get_user_by_name(login):
 def get_excel_path():
     query = f"""
         SELECT * FROM excel_params
+            """
+    result = execute_db_query(query)
+    return result
+
+
+def get_telegram_params():
+    query = f"""
+        SELECT * FROM telegram
             """
     result = execute_db_query(query)
     return result
@@ -352,9 +360,9 @@ def add_host_template_notes(notes_to_add):
     execute_db_query(query, notes_to_add)
 
 
-def add_recipient(recipient, rec_type):
+def add_recipient(recipient):
     query = f"""
-        INSERT INTO recipients ('recipient', 'type') VALUES('{recipient}', '{rec_type}');
+        INSERT INTO email ('recipient') VALUES('{recipient}');
             """
     execute_db_query(query)
 
@@ -369,6 +377,13 @@ def add_user(login, password, auth_type):
 def add_excel_path(excel_path):
     query = f"""
         INSERT INTO excel_params ('path') VALUES('{excel_path}');
+            """
+    execute_db_query(query)
+
+
+def add_telegram_params(chat_id, bot_token, active):
+    query = f"""
+        INSERT INTO telegram ('chat_id', 'bot_token', 'active') VALUES('{chat_id}', '{bot_token}', '{active}');
             """
     execute_db_query(query)
 
@@ -404,6 +419,13 @@ def update_user_password(login, password):
     query = f"""
             UPDATE users SET (password) = ('{password}')
             WHERE login = '{login}';
+                """
+    execute_db_query(query)
+
+
+def update_telegram_parameter(parameter, value):
+    query = f"""
+                UPDATE telegram SET ({parameter}) = ('{value}');
                 """
     execute_db_query(query)
 
@@ -458,7 +480,7 @@ def delete_host_template_notes_from_local_db(host_id_list=0):
 
 def delete_recipient(recipient):
     query = f"""
-        DELETE FROM recipients
+        DELETE FROM email
         WHERE recipient = '{recipient}';
             """
     execute_db_query(query)

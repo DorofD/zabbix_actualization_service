@@ -2,54 +2,194 @@
 <br />
 <table>
   <tr>
-    <th>Адресат</th>
-    <th>Тип уведомления</th>
-    <th>Действие</th>
+    <th>Email</th>
+    <th>Telegram</th>
   </tr>
-  {% for cat, msg in get_flashed_messages(True) %}
+  <tr>
+    <td>
+      <table class="mgmt_params">
+        {% if msg_type == "email" or msg_type == "all"%} {% for cat, msg in
+        get_flashed_messages(True) %}
 
-  <tr id="msg">
-    <td colspan="3" id="msg">
+        <div class="flash {{cat}}" id="msg">
+          {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
+            X
+          </button>
+        </div>
+        {% endfor %} {% endif %}
+        <tr>
+          <th>Адресат</th>
+          <th>Действие</th>
+        </tr>
+        {% for recipient in recipients %}
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>{{recipient[1]}}</td>
+            <td><input type="submit" name="submit" value="Удалить" /></td>
+            <input type="hidden" name="recipient" value="{{recipient[1]}}" />
+            <input type="hidden" name="operation" value="delete_recipient" />
+          </tr>
+        </form>
+        {% endfor %}
+
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td><input type="text" name="recipient" /></td>
+            <td><input type="submit" name="submit" value="Добавить" /></td>
+          </tr>
+          <input type="hidden" name="operation" value="add_recipient" />
+        </form>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Отправить письмо</th>
+        </tr>
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>Адресат</td>
+            <td><input type="text" name="recipient" /></td>
+          </tr>
+          <tr>
+            <td>Текст письма</td>
+            <td><input type="text" name="letter_text" /></td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <input type="submit" name="submit" value="Отправить" />
+            </td>
+          </tr>
+          <input type="hidden" name="operation" value="send_email" />
+        </form>
+      </table>
+    </td>
+    <td>
+      {% if msg_type == "telegram" or msg_type == "all"%} {% for cat, msg in
+      get_flashed_messages(True) %}
+
       <div class="flash {{cat}}" id="msg">
         {{ msg }} <br /><button id="msg" onclick="deletedItem('msg');">
           X
         </button>
       </div>
+      {% endfor %} {% endif %}
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Текущие параметры</th>
+        </tr>
+        <tr>
+          <td>Токен бота</td>
+          <td>{{bot_token}}</td>
+        </tr>
+        <tr>
+          <td>ID чата</td>
+          <td>{{chat_id}}</td>
+        </tr>
+        <tr>
+          <td>Уведомления</td>
+          {% if tg_active == 0 %}
+          <td>Отключены</td>
+          {% else %}
+          <td>Включены</td>
+          {% endif %}
+        </tr>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <tr>
+          <th colspan="2">Изменение параметров</th>
+        </tr>
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>Токен бота</td>
+            <td><input type="text" name="bot_token" /></td>
+          </tr>
+          <tr>
+            <th colspan="2">
+              <input type="submit" name="submit" value="Изменить" />
+              <input type="hidden" name="operation" value="set_bot_token" />
+            </th>
+          </tr>
+        </form>
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <td>ID чата</td>
+            <td><input type="text" name="chat_id" /></td>
+          </tr>
+          <tr>
+            <th colspan="2">
+              <input type="submit" name="submit" value="Изменить" />
+              <input type="hidden" name="operation" value="set_chat_id" />
+            </th>
+          </tr>
+        </form>
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <th colspan="2">
+              {% if tg_active == 1 %}
+              <input
+                type="submit"
+                name="submit"
+                value="Отключить уведомления"
+              />
+              <input type="hidden" name="operation" value="set_tg_condition" />
+              <input type="hidden" name="value" value="0" />
+              {% else %}
+              <input type="submit" name="submit" value="Включить уведомления" />
+              <input type="hidden" name="operation" value="set_tg_condition" />
+              <input type="hidden" name="value" value="1" />
+              {% endif%}
+            </th>
+          </tr>
+        </form>
+      </table>
+      <br />
+      <table class="mgmt_params">
+        <form
+          action="{{url_for('mgmt_notifications')}}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <tr>
+            <th colspan="2">Отправить сообщение</th>
+          </tr>
+          <tr>
+            <td>Текст сообщения</td>
+            <td><input type="text" name="letter_text" /></td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <input type="submit" name="submit" value="Отправить" />
+            </td>
+            <input type="hidden" name="operation" value="send_tg_message" />
+          </tr>
+        </form>
+      </table>
     </td>
   </tr>
-  {% endfor %} {% for recipient in recipients %}
-  <form
-    action="{{url_for('mgmt_notifications')}}"
-    method="POST"
-    enctype="multipart/form-data"
-  >
-    <tr>
-      <td>{{recipient[1]}}</td>
-      <td>{{recipient[2]}}</td>
-      <td><input type="submit" name="submit" value="Удалить" /></td>
-      <input type="hidden" name="operation" value="delete" />
-      <input type="hidden" name="recipient" value="{{recipient[1]}}" />
-    </tr>
-  </form>
-  {% endfor %}
-
-  <form
-    action="{{url_for('mgmt_notifications')}}"
-    method="POST"
-    enctype="multipart/form-data"
-  >
-    <tr>
-      <td><input type="text" name="recipient" /></td>
-      <td>
-        <select name="type">
-          <option value="Email">Email</option>
-          <option value="Telegram">Telegram</option>
-        </select>
-      </td>
-      <td><input type="submit" name="submit" value="Добавить" /></td>
-
-      <input type="hidden" name="operation" value="add" />
-    </tr>
-  </form>
-  {% endblock %}
 </table>
+{% endblock %}

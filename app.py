@@ -5,10 +5,12 @@ from services.main_operations import execute_main_operations, update_local_data
 from services.ws_entities.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
 from services.ws_entities.shops import update_excel_path
-from models.local_db import get_users, get_excel_path, get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user
+from models.local_db import get_users, get_excel_path, get_type_template_view, get_host_template_view, get_zabbix_params_from_local_db, set_zabbix_params, get_recipients, delete_recipient, add_recipient, delete_user, add_user, get_telegram_params, update_telegram_parameter
 from models.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 from services.zabbix_scripts.zabbix_templates import *
 from services.zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
+from services.notifications.email_smtp import send_email
+from services.notifications.telegram import send_tg_message
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
@@ -174,16 +176,50 @@ def mgmt_params():
 def mgmt_notifications():
     if not current_user.is_authenticated:
         return render_template('login.html')
+    msg_type = ''
+
     if request.method == 'POST':
         try:
-            if request.form['operation'] == 'delete':
+            if request.form['operation'] == 'delete_recipient':
                 delete_recipient(request.form['recipient'])
-            elif request.form['operation'] == 'add':
-                add_recipient(request.form['recipient'], request.form['type'])
+            elif request.form['operation'] == 'add_recipient':
+                add_recipient(request.form['recipient'])
+            elif request.form['operation'] == 'send_email':
+                if not request.form['recipient'] or not request.form['letter_text']:
+                    flash(f'Заполните оба поля для отправки письма',
+                          category='error')
+                    msg_type = 'email'
+                else:
+                    if send_email(recipient=request.form['recipient'], text=request.form['letter_text']):
+                        flash(f'Сообщение отправлено', category='success')
+                    else:
+                        flash(f'Ошибка отправки сообщения', category='error')
+                    msg_type = 'email'
+            elif request.form['operation'] == 'set_bot_token':
+                update_telegram_parameter(
+                    'bot_token', (request.form['bot_token']))
+            elif request.form['operation'] == 'set_chat_id':
+                update_telegram_parameter('chat_id', (request.form['chat_id']))
+            elif request.form['operation'] == 'set_tg_condition':
+                update_telegram_parameter('active', int(request.form['value']))
+            elif request.form['operation'] == 'send_tg_message':
+                if not request.form['letter_text']:
+                    flash(f'Заполните поле для отправки сообщения',
+                          category='error')
+                    msg_type = 'telegram'
+                else:
+                    if send_tg_message(request.form['letter_text']):
+                        flash(f'Сообщение отправлено', category='success')
+                    else:
+                        flash(f'Ошибка отправки сообщения', category='error')
+                    msg_type = 'telegram'
+
         except Exception as exc:
-            flash(f'Операция не выполнена: {str(exc)}', category='error')
+            flash(f'Неопознанная ошибка {str(exc)}', category='error')
+            msg_type = 'all'
     recipients = get_recipients()
-    return render_template('mgmt_notifications.html', class2='active', class2_4='active', recipients=recipients, login=session['username'])
+    tg_params = get_telegram_params()
+    return render_template('mgmt_notifications.html', class2='active', class2_4='active', chat_id=tg_params[0][0], bot_token=tg_params[0][1], recipients=recipients, tg_active=tg_params[0][2], msg_type=msg_type, login=session['username'])
 
 
 @ app.route('/mgmt_logs', methods=(['POST', 'GET']))
