@@ -6,15 +6,13 @@ flag1 = 1;
 flag2 = 1;
 flag3 = 1;
 
-function show_spinner1() {
-    document.getElementById("spinner1").style.visibility = "visible";
-    flag1 = 0;
-  }
-function show_spinner2() {
-    document.getElementById("spinner2").style.visibility = "visible";
-    flag2 = 0;
-  }
-function show_spinner3() {
-    document.getElementById("spinner3").style.visibility = "visible";
-    flag3 = 0;
-  }
+function show_spinner(spinner) {
+    document.getElementById(spinner).style.visibility = "visible";
+    if (spinner == 'spiner1'){
+      flag1 = 0;
+    } else if (spinner == 'spiner2'){
+      flag2 = 0;
+    } else if(spinner == 'spiner3'){
+      flag3 = 0;  
+    }
+}
