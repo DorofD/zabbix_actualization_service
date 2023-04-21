@@ -1,11 +1,6 @@
 {% extends 'management.html' %} {% block content %} {{ super() }}
 <br />
 {% for cat, msg in get_flashed_messages(True) %}
-<script type="text/javascript">
-  function deletedItem(idItem) {
-    document.getElementById(idItem).remove();
-  }
-</script>
 
 <!-- <tr id="msg">
   <td colspan="3" id="msg"> -->

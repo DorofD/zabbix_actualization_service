@@ -7,11 +7,6 @@
     <th colspan="2">Импорт</th>
   </tr>
   {% for cat, msg in get_flashed_messages(True) %}
-  <script type="text/javascript">
-    function deletedItem(idItem) {
-      document.getElementById(idItem).remove();
-    }
-  </script>
 
   <tr id="msg">
     <td colspan="5" id="msg">

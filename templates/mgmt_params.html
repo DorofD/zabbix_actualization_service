@@ -27,11 +27,6 @@
         </tr>
         {% if msg_type == "zabbix" %} {% for cat, msg in
         get_flashed_messages(True) %}
-        <script type="text/javascript">
-          function deletedItem(idItem) {
-            document.getElementById(idItem).remove();
-          }
-        </script>
 
         <tr id="msg">
           <td colspan="2" id="msg">
@@ -103,11 +98,6 @@
         </tr>
         {% if msg_type == "excel" %} {% for cat, msg in
         get_flashed_messages(True) %}
-        <script type="text/javascript">
-          function deletedItem(idItem) {
-            document.getElementById(idItem).remove();
-          }
-        </script>
 
         <tr id="msg">
           <td id="msg">
