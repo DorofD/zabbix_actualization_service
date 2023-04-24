@@ -1,7 +1,7 @@
-from flask import Flask, render_template, send_file, url_for, request, flash, session, redirect
+from flask import Flask, render_template, send_file, url_for, request, flash, session, redirect, abort
 from flask_scheduler import Scheduler
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
-from services.main_operations import execute_main_operations, update_local_data
+from services.main_operations import *
 from services.ws_entities.host_parameters import set_templates_to_types, set_templates_to_hosts, get_relations_xlsx, get_hosts_xlsx, get_events_from_log
 from services.users import *
 from services.ws_entities.shops import update_excel_path
@@ -9,6 +9,7 @@ from models.local_db import get_users, get_excel_path, get_type_template_view, g
 from models.ws_db import get_hosts_from_ws_db, get_types_from_ws_db
 from services.zabbix_scripts.zabbix_templates import *
 from services.zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
+from services.zabbix_scripts.zabbix_events import add_problem_message
 from services.notifications.email_smtp import send_email
 from services.notifications.telegram import send_tg_message
 
@@ -144,7 +145,8 @@ def mgmt_params():
         if request.form['operation'] == 'change_zabbix':
             try:
                 if not request.form['address'] or not request.form['version']:
-                    raise Exception('Оба поля обязательны к заполнению')
+                    raise Exception(
+                        'Оба поля обязательны к заполнению')
                 set_zabbix_params(
                     [request.form['address'], request.form['version']])
                 request.form['address']
@@ -159,7 +161,8 @@ def mgmt_params():
         if request.form['operation'] == 'change_excel':
             try:
                 if not request.form['excel_path']:
-                    raise Exception('Поле обязательно к заполнению')
+                    raise Exception(
+                        'Поле обязательно к заполнению')
                 update_excel_path(request.form['excel_path'])
                 flash('Параметры изменены', category='success')
                 msg_type = 'excel'
@@ -191,9 +194,11 @@ def mgmt_notifications():
                     msg_type = 'email'
                 else:
                     if send_email(recipient=request.form['recipient'], text=request.form['letter_text']):
-                        flash(f'Сообщение отправлено', category='success')
+                        flash(f'Сообщение отправлено',
+                              category='success')
                     else:
-                        flash(f'Ошибка отправки сообщения', category='error')
+                        flash(
+                            f'Ошибка отправки сообщения', category='error')
                     msg_type = 'email'
             elif request.form['operation'] == 'set_bot_token':
                 update_telegram_parameter(
@@ -209,13 +214,16 @@ def mgmt_notifications():
                     msg_type = 'telegram'
                 else:
                     if send_tg_message(request.form['letter_text']):
-                        flash(f'Сообщение отправлено', category='success')
+                        flash(f'Сообщение отправлено',
+                              category='success')
                     else:
-                        flash(f'Ошибка отправки сообщения', category='error')
+                        flash(
+                            f'Ошибка отправки сообщения', category='error')
                     msg_type = 'telegram'
 
         except Exception as exc:
-            flash(f'Неопознанная ошибка {str(exc)}', category='error')
+            flash(
+                f'Неопознанная ошибка {str(exc)}', category='error')
             msg_type = 'all'
     recipients = get_recipients()
     tg_params = get_telegram_params()
@@ -230,7 +238,8 @@ def mgmt_logs():
         try:
             return send_file('log.txt', as_attachment=True)
         except Exception as exc:
-            flash(f'Ошибка выгрузки логов: {str(exc)}', category='error')
+            flash(
+                f'Ошибка выгрузки логов: {str(exc)}', category='error')
     return render_template('mgmt_logs.html', class2='active', class2_5='active', login=session['username'])
 
 
@@ -253,7 +262,8 @@ def ws():
                 file = get_hosts_xlsx(types=types, notes=notes)
                 return send_file(file, as_attachment=True)
         except Exception as exc:
-            flash(f'Ошибка выполнения операции: {str(exc)}', category='error')
+            flash(
+                f'Ошибка выполнения операции: {str(exc)}', category='error')
 
     return render_template('ws.html', class3='active', hosts=hosts, types=types, login=session['username'])
 
@@ -277,7 +287,8 @@ def users():
                 flash(
                     f"Пароль пользователя {request.form['login']} успешно изменен", category='success')
         except Exception as exc:
-            flash(f'Операция не выполнена: {str(exc)}', category='error')
+            flash(
+                f'Операция не выполнена: {str(exc)}', category='error')
     users = get_users()
 
     return render_template('users.html', class4='active', users=users, login=session['username'])
@@ -311,6 +322,17 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if request.method != 'POST':
+        abort(400)
+    try:
+        add_problem_message(request.json)
+    except Exception as exc:
+        app_logger.error(f"Can't set SD request number to Zabbix event: {exc}")
+    return '', 200
 
 
 if __name__ == '__main__':
