@@ -2,6 +2,7 @@ from services.ws_entities.host_parameters import *
 from services.ws_entities.shops import *
 from services.ws_entities.hosts import *
 from services.notifications.email_smtp import *
+from services.notifications.telegram import *
 from services.zabbix_scripts.zabbix_hosts import *
 from services.zabbix_scripts.zabbix_groups import *
 from services.zabbix_scripts.zabbix_api import get_zabbix_auth_key
@@ -76,6 +77,7 @@ def execute_main_operations():
         update_zabbix_data()
         return True
     except Exception as exc:
+        send_tg_message(str(exc))
         if send_email(str(exc)):
             app_logger.info("Error message sent to recipients")
         else:
