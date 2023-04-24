@@ -1,19 +1,14 @@
 /venv
 .env
 /old_scripts
-log
 log.txt
-группы 3.90.txt
 database.db
 db_schema.drawio
 data.xlsx
 sas.py
-test магазины.xlsx
 .gitignore
-~$test магазины.xlsx
 __pycache__/
-обслуживания 3.90.txt
-~$set_templates.xlsx
 set_templates.xlsx
 flask_log.txt
 export.xlsx
+readme.docx
