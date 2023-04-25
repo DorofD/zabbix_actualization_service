@@ -3,6 +3,7 @@ server {
 
     location / {
         include uwsgi_params;
+        uwsgi_read_timeout 480;
         uwsgi_pass unix:/home/user_name/project_folder/project.sock;
     }
 }
