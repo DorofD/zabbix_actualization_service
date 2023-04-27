@@ -16,5 +16,15 @@
   enctype="multipart/form-data"
 >
   <input type="submit" name="submit" value="Выгрузить" />
+  <input type="hidden" name="operation" value="get_log" />
+</form>
+<br />
+<form
+  action="{{url_for('mgmt_logs')}}"
+  method="POST"
+  enctype="multipart/form-data"
+>
+  <input type="submit" name="submit" value="Удалить" />
+  <input type="hidden" name="operation" value="remove_log" />
 </form>
 {% endblock %}

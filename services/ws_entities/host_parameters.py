@@ -233,13 +233,23 @@ def get_events_from_log():
     if not os.path.exists('log.txt'):
         event_list.append(['...', 'На данный момент события отсутствуют'])
         return event_list
-    with open('log.txt') as file:
-        for line in (file.readlines()[-10:]):
-            event_list.append(line.replace('\n', ''))
-    if not event_list:
-        event_list.append(['...', 'На данный момент события отсутствуют'])
+    try:
+        with open('log.txt') as file:
+            for line in (file.readlines()[-10:]):
+                event_list.append(line.replace('\n', ''))
+        if not event_list:
+            event_list.append(['...', 'На данный момент события отсутствуют'])
+            return event_list
+        final_list = []
+        for note in reversed(event_list):
+            final_list.append([note[0:16], note[24:]])
+        return final_list
+    except:
+        event_list.append(
+            ['...', 'Ошибка чтения файла. Выгрузите и удалите лог-файл.'])
         return event_list
-    final_list = []
-    for note in reversed(event_list):
-        final_list.append([note[0:16], note[24:]])
-    return final_list
+
+
+def remove_log():
+    log = open('log.txt', 'w')
+    log.close()

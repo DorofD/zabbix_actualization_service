@@ -1,0 +1,3 @@
+FROM nginx
+
+COPY /ubuntu_deploy/zas_nginx_docker /etc/nginx/nginx.conf

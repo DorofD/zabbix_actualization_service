@@ -235,11 +235,17 @@ def mgmt_logs():
     if not current_user.is_authenticated:
         return render_template('login.html')
     if request.method == 'POST':
-        try:
-            return send_file('log.txt', as_attachment=True)
-        except Exception as exc:
-            flash(
-                f'Ошибка выгрузки логов: {str(exc)}', category='error')
+        if request.form['operation'] == 'get_log':
+            try:
+                return send_file('log.txt', as_attachment=True)
+            except Exception as exc:
+                flash(f'Ошибка выгрузки логов: {str(exc)}', category='error')
+        if request.form['operation'] == 'remove_log':
+            try:
+                remove_log()
+                flash(f'Логи удалены', category='success')
+            except Exception as exc:
+                flash(f'Ошибка удаления логов: {str(exc)}', category='error')
     return render_template('mgmt_logs.html', class2='active', class2_5='active', login=session['username'])
 
 
