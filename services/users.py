@@ -6,14 +6,15 @@ from services.env_vars import get_var
 
 LDAP_SERVER = get_var('LDAP_SERVER')
 LDAP_USER = get_var('LDAP_USER')
+LDAP_PASSWORD = get_var('LDAP_PASSWORD')
 LDAP_USER_CN = get_var('LDAP_USER_CN')
 SEARCH_USER_CATALOG = get_var('SEARCH_USER_CATALOG')
 
 
 def ldap_auth(login, password):
     try:
-        conn = Connection(
-            LDAP_SERVER, LDAP_USER_CN, LDAP_USER, auto_bind=True)
+        conn = Connection(server=LDAP_SERVER, user=LDAP_USER_CN,
+                          auto_bind=True, password=LDAP_PASSWORD)
         conn.search(SEARCH_USER_CATALOG,
                     f'(sAMAccountName={login})', attributes=['Name'])
         name = conn.entries[0]['Name']
