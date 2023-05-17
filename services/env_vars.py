@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 
-def get_var(var_name):
+def get_var(var_name: str):
     if platform == "linux" or platform == "linux2":
         project_path = str(os.path.join(os.path.dirname(__file__))[0:(os.path.join(
             os.path.dirname(__file__)).index('zabbix_actualization_service') + 29)])
