@@ -7,6 +7,9 @@ from services.zabbix_scripts.zabbix_hosts import *
 from services.zabbix_scripts.zabbix_groups import *
 from services.zabbix_scripts.zabbix_api import get_zabbix_auth_key
 from services.zabbix_scripts.zabbix_maintenance import update_zabbix_maintenance
+from services.radius.radius_operations import *
+from models.ws_db import get_hosts_from_ws_db
+
 import logging
 
 # общий лог файл
@@ -71,10 +74,39 @@ def update_zabbix_data():
         raise Exception(exc)
 
 
+def actualize_radius():
+    try:
+        hosts = get_hosts_from_ws_db(types=['WAN', 'WAN2'])
+        host_list_from_ws = []
+        for host in hosts:
+            host_list_from_ws.append(
+                {'Name': f'{host[0]}-{host[2]}', 'Address': host[3]})
+        client_list_from_radius = get_radius_clients()
+        # добавление отсутствующих клиентов
+        clients_to_add = []
+        for client in host_list_from_ws:
+            if client not in client_list_from_radius:
+                clients_to_add.append(client)
+        add_radius_clients(clients_to_add)
+
+        # удаление неактуальных клиентов
+        clients_to_remove = []
+        for client in client_list_from_radius:
+            if client not in host_list_from_ws and client['Address'] != '172.16.0.0/16':
+                clients_to_remove.append(client)
+        remove_radius_clients(clients_to_remove)
+        app_logger.info("RADIUS update success")
+        return True
+    except Exception as exc:
+        app_logger.error(f"RADIUS update fail: {exc}")
+        raise Exception(exc)
+
+
 def execute_main_operations():
     try:
         update_local_data()
         update_zabbix_data()
+        actualize_radius()
         return True
     except Exception as exc:
         send_tg_message(str(exc))

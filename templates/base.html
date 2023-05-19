@@ -32,10 +32,13 @@
             <a class="{{class3}}" href="{{ url_for('ws')}}">Данные WS</a>
           </li>
           <li>
-            <a class="{{class4}}" href="{{ url_for('users')}}">Пользователи</a>
+            <a class="{{class4}}" href="{{ url_for('radius')}}">RADIUS</a>
           </li>
           <li>
-            <a class="{{class5}}" href="{{ url_for('about')}}">О приложении</a>
+            <a class="{{class5}}" href="{{ url_for('users')}}">Пользователи</a>
+          </li>
+          <li>
+            <a class="{{class6}}" href="{{ url_for('about')}}">О приложении</a>
           </li>
           <li><a class="user" href="{{ url_for('logout')}}">Выйти</a></li>
           <li class="user">{{ login }}</li>

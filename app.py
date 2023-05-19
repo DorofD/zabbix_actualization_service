@@ -12,6 +12,7 @@ from services.zabbix_scripts.zabbix_hosts import delete_hosts_from_zabbix
 from services.zabbix_scripts.zabbix_events import add_problem_message
 from services.notifications.email_smtp import send_email
 from services.notifications.telegram import send_tg_message
+from services.radius.radius_operations import get_radius_clients, export_radius_clients_xlsx
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'gDLKWIgkuygwdf23'
@@ -116,7 +117,7 @@ def mgmt_relations():
     return render_template('mgmt_relations.html', class2='active', class2_2='active', notes=notes, table_name=table_name, login=session['username'])
 
 
-@ app.route('/mgmt_params', methods=(['POST', 'GET']))
+@app.route('/mgmt_params', methods=(['POST', 'GET']))
 def mgmt_params():
     if not current_user.is_authenticated:
         return render_template('login.html')
@@ -175,7 +176,7 @@ def mgmt_params():
     return render_template('mgmt_params.html', class2='active', class2_3='active', excel_path=excel_path, address=address, version=version, templates=templates, msg_type=msg_type, login=session['username'])
 
 
-@ app.route('/mgmt_notifications', methods=(['POST', 'GET']))
+@app.route('/mgmt_notifications', methods=(['POST', 'GET']))
 def mgmt_notifications():
     if not current_user.is_authenticated:
         return render_template('login.html')
@@ -230,7 +231,7 @@ def mgmt_notifications():
     return render_template('mgmt_notifications.html', class2='active', class2_4='active', chat_id=tg_params[0][0], bot_token=tg_params[0][1], recipients=recipients, tg_active=tg_params[0][2], msg_type=msg_type, login=session['username'])
 
 
-@ app.route('/mgmt_logs', methods=(['POST', 'GET']))
+@app.route('/mgmt_logs', methods=(['POST', 'GET']))
 def mgmt_logs():
     if not current_user.is_authenticated:
         return render_template('login.html')
@@ -249,7 +250,7 @@ def mgmt_logs():
     return render_template('mgmt_logs.html', class2='active', class2_5='active', login=session['username'])
 
 
-@ app.route('/ws', methods=(['POST', 'GET']))
+@app.route('/ws', methods=(['POST', 'GET']))
 def ws():
     if not current_user.is_authenticated:
         return render_template('login.html')
@@ -274,7 +275,42 @@ def ws():
     return render_template('ws.html', class3='active', hosts=hosts, types=types, login=session['username'])
 
 
-@ app.route('/users', methods=(['POST', 'GET']))
+@app.route('/radius', methods=(['POST', 'GET']))
+def radius():
+    if not current_user.is_authenticated:
+        return render_template('login.html')
+    address = get_var('RADIUS_SERVER')
+    clients = []
+
+    if request.method == 'POST':
+        if request.form['operation'] == 'actualize':
+            try:
+                if actualize_radius():
+                    flash(
+                        f'Операция «Актуализация» успешно выполнена', category='success')
+            except Exception as exc:
+                flash(
+                    f'Операция «Актуализация» не выполнена: {str(exc)}', category='error')
+        if request.form['operation'] == 'export':
+            try:
+                file = export_radius_clients_xlsx()
+                return send_file(file, as_attachment=True)
+            except Exception as exc:
+                flash(
+                    f'Не удалось экспортировать клиентов: {str(exc)}', category='error')
+        if request.form['operation'] == 'show':
+            try:
+                clients = get_radius_clients()
+                if not clients:
+                    clients = [
+                        {'Address': '...', 'Name': 'Клиенты не найдены'}]
+            except Exception as exc:
+                flash(
+                    f'Не удалось получить клиентов: {str(exc)}', category='error')
+    return render_template('radius.html', class4='active', login=session['username'], address=address, clients=clients)
+
+
+@app.route('/users', methods=(['POST', 'GET']))
 def users():
     if not current_user.is_authenticated:
         return render_template('login.html')
@@ -297,17 +333,17 @@ def users():
                 f'Операция не выполнена: {str(exc)}', category='error')
     users = get_users()
 
-    return render_template('users.html', class4='active', users=users, login=session['username'])
+    return render_template('users.html', class5='active', users=users, login=session['username'])
 
 
-@ app.route('/about', methods=(['POST', 'GET']))
+@app.route('/about', methods=(['POST', 'GET']))
 def about():
     if not current_user.is_authenticated:
         return render_template('login.html')
     if request.method == 'POST':
         return send_file('readme.pdf', as_attachment=True)
 
-    return render_template('about.html', class5='active', login=session['username'])
+    return render_template('about.html', class6='active', login=session['username'])
 
 
 @app.route('/login', methods=('GET', 'POST'))

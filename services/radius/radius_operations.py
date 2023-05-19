@@ -1,6 +1,7 @@
 import paramiko
+import os
+import pandas as pd
 from services.env_vars import get_var
-from models.ws_db import get_hosts_from_ws_db
 
 
 RADIUS_SERVER = get_var('RADIUS_SERVER')
@@ -25,7 +26,7 @@ def get_radius_clients():
     if error_message:
         error_message = error_message.replace('\x1b[31;1m', '')
         error_message = error_message.replace('\x1b[0m\r', '')
-        raise Exception(f'get radius client error: {error_message}')
+        raise Exception(f'get radius clients error: {error_message}')
 
     out_message = out_message.replace('\r', '')
     out_message = out_message.replace(' ', '')
@@ -48,7 +49,7 @@ def get_radius_clients():
     return clients_list
 
 
-def add_radius_clients(clients_list: list):
+def add_radius_clients(clients_list):
     conn = get_ssh_connection()
     for client in clients_list:
         stdin, stdout, stderr = conn.exec_command(
@@ -57,11 +58,11 @@ def add_radius_clients(clients_list: list):
         if error_message:
             error_message = error_message.replace('\x1b[31;1m', '')
             error_message = error_message.replace('\x1b[0m\r', '')
-            raise Exception(f'add radius client error: {error_message}')
+            raise Exception(f'add radius clients error: {error_message}')
     return True
 
 
-def remove_radius_clients(clients_list: list):
+def remove_radius_clients(clients_list):
     conn = get_ssh_connection()
     for client in clients_list:
         stdin, stdout, stderr = conn.exec_command(
@@ -70,40 +71,21 @@ def remove_radius_clients(clients_list: list):
         if error_message:
             error_message = error_message.replace('\x1b[31;1m', '')
             error_message = error_message.replace('\x1b[0m\r', '')
-            raise Exception(f'remove radius client error: {error_message}')
+            raise Exception(f'remove radius clients error: {error_message}')
     return True
 
 
-def actualize_radius():
-    hosts = get_hosts_from_ws_db(types=['WAN', 'WAN2'])
-    host_list_from_ws = []
-    for host in hosts:
-        host_list_from_ws.append(
-            {'Name': f'{host[0]}-{host[2]}', 'Address': host[3]})
-    client_list_from_radius = get_radius_clients()
-    print(len(client_list_from_radius))
-    # добавление отсутствующих клиентов
-    clients_to_add = []
-    for client in host_list_from_ws:
-        if client not in client_list_from_radius:
-            clients_to_add.append(client)
-    add_radius_clients(clients_to_add)
+def export_radius_clients_xlsx():
+    if os.path.exists('export.xlsx'):
+        os.remove('export.xlsx')
 
-    # удаление неактуальных клиентов
-    clients_to_remove = []
-    for client in client_list_from_radius:
-        if client not in host_list_from_ws:
-            clients_to_remove.append(client)
-    remove_radius_clients(clients_to_remove)
-
-
-actualize_radius()
-# clients = [{'Name': '979-WAN', 'Address': '176.211.110.66'},
-#            {'Name': '979-WAN2', 'Address': '31.170.112.71'},
-#            {'Name': '980-WAN', 'Address': '195.239.185.130'},
-#            {'Name': '980-WAN2', 'Address': '90.154.0.230'},
-#            {'Name': '981-WAN', 'Address': '178.185.143.2'}
-#            ]
-# add_radius_clients(clients)
-
-# print({'Name': '40-3', 'Address': '46.34.150.163'} in clients)
+    clients = get_radius_clients()
+    writer = pd.ExcelWriter("export.xlsx")
+    data = pd.DataFrame({
+        'Address': [client['Address'] for client in clients],
+        'Name': [client['Name'] for client in clients],
+        'SharedSecret': RADIUS_SHARED_SECRET,
+    })
+    data.to_excel(writer, 'Sheet1', index=False)
+    writer.save()
+    return 'export.xlsx'

@@ -1,4 +1,16 @@
-{% extends 'management.html' %} {% block content %} {{ super() }} <br />
+{% extends 'base.html' %} {% block content %} {{ super() }}
+
+<table>
+  <tr>
+    <th colspan="2">Текущие параметры</th>
+  </tr>
+  <tr>
+    <td>Адрес RADIUS сервера</td>
+    <td>{{ address }}</td>
+  </tr>
+</table>
+<br />
+<br />
 <table>
   <tr>
     <th>Операция</th>
@@ -20,15 +32,13 @@
   {% endfor %}
 
   <form
-    action="{{url_for('mgmt_operations')}}"
+    action="{{url_for('radius')}}"
     method="POST"
     enctype="multipart/form-data"
   >
     <tr>
-      <td>Локальная актуализация</td>
-      <td>
-        Запуск актуализации локальных данных без обновления данных в Zabbix
-      </td>
+      <td>Актуализация</td>
+      <td>Запуск актуализации клиентов на RADIUS сервере</td>
       <td>
         <input
           type="submit"
@@ -45,27 +55,25 @@
           }
         </script>
       </td>
-      <input type="hidden" name="operation" value="update_local_data" />
+      <input type="hidden" name="operation" value="actualize" />
     </tr>
   </form>
   <form
-    action="{{url_for('mgmt_operations')}}"
+    action="{{url_for('radius')}}"
     method="POST"
     enctype="multipart/form-data"
   >
     <tr>
-      <td>Полная актуализация</td>
-      <td>
-        Запуск актуализации локальных данных, данных в Zabbix и данных RADIUS
-        сервера
-      </td>
+      <td>Экспорт</td>
+      <td>Выгрузить существующих клиентов в формате .xlsx</td>
       <td>
         <input
           type="submit"
           name="submit"
           value="Выполнить"
-          onclick="show_spinner('spinner2');"
           id="input2"
+          onclick="show_spinner('spinner2');"
+          target="downloadIframe"
         />
       </td>
       <td>
@@ -76,23 +84,22 @@
           }
         </script>
       </td>
-      <input type="hidden" name="operation" value="main" />
+      <input type="hidden" name="operation" value="export" />
     </tr>
   </form>
   <form
-    action="{{url_for('mgmt_operations')}}"
+    action="{{url_for('radius')}}"
     method="POST"
     enctype="multipart/form-data"
   >
     <tr>
-      <td>Удаление хостов</td>
-      <td>Удаление всех хостов из Zabbix сервера</td>
+      <td>Отображение</td>
+      <td>Показать существующих клиентов</td>
       <td>
         <input
           type="submit"
           name="submit"
           value="Выполнить"
-          disabled="yes"
           onclick="show_spinner('spinner3');"
         />
       </td>
@@ -104,8 +111,24 @@
           }
         </script>
       </td>
-      <input type="hidden" name="operation" value="delete_zabbix_hosts" />
+      <input type="hidden" name="operation" value="show" />
     </tr>
   </form>
 </table>
-{% endblock %}
+
+{% if clients %}
+<br />
+<br />
+<table class="users">
+  <tr>
+    <th>Имя</th>
+    <th>Адрес</th>
+  </tr>
+  {% for client in clients %}
+  <tr>
+    <td>{{client['Name']}}</td>
+    <td>{{client['Address']}}</td>
+  </tr>
+
+  {% endfor %} {% endif %} {% endblock %}
+</table>
