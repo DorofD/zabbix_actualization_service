@@ -82,12 +82,6 @@ def actualize_radius():
             host_list_from_ws.append(
                 {'Name': f'{host[0]}-{host[2]}', 'Address': host[3]})
         client_list_from_radius = get_radius_clients()
-        # добавление отсутствующих клиентов
-        clients_to_add = []
-        for client in host_list_from_ws:
-            if client not in client_list_from_radius:
-                clients_to_add.append(client)
-        add_radius_clients(clients_to_add)
 
         # удаление неактуальных клиентов
         clients_to_remove = []
@@ -96,6 +90,12 @@ def actualize_radius():
                 clients_to_remove.append(client)
         remove_radius_clients(clients_to_remove)
         app_logger.info("RADIUS update success")
+        # добавление отсутствующих клиентов
+        clients_to_add = []
+        for client in host_list_from_ws:
+            if client not in client_list_from_radius:
+                clients_to_add.append(client)
+        add_radius_clients(clients_to_add)
         return True
     except Exception as exc:
         app_logger.error(f"RADIUS update fail: {exc}")
