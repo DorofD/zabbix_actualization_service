@@ -46,7 +46,8 @@ def get_shops_from_xls(file):
                         end_time = pd.to_datetime(
                             start_stop[1], format='%H:%M')
                     else:
-                        continue
+                        raise Exception(
+                            f"Неверный формат графика работы магазина, PID: {sheet['PT_ID'][i]}")
         else:
             continue
 
@@ -136,6 +137,9 @@ def update_shops():
         delete_shops_from_local_db(pids_to_delete)
     os.remove(excel_path)
     return True
+
+
+update_shops()
 
 
 def update_excel_path(new_excel_path):
