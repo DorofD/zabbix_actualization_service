@@ -3,6 +3,7 @@ import requests
 
 
 def send_tg_message(text):
+    text = 'ZAS message: ' + text
     tg_params = get_telegram_params()
     if not tg_params[0][2]:
         return False
